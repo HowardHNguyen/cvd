@@ -1,1 +1,8 @@
-This is a requirements file
+streamlit
+scikit-learn==1.2.0
+pandas
+numpy
+joblib
+tensorflow
+keras
+git+https://github.com/keras-team/keras.git
