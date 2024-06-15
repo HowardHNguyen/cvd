@@ -76,11 +76,6 @@ if st.button('Predict'):
     st.write(f"Random Forest Prediction: {'CVD' if rf_pred else 'No CVD'} with probability {rf_proba[0][1]:.2f}")
     st.write(f"Gradient Boosting Machine Prediction: {'CVD' if gbm_pred else 'No CVD'} with probability {gbm_proba[0][1]:.2f}")
 
-    # Calculate ROC curve for the current input
-    y_true_input = [rf_pred]  # Use the current prediction as true label for this demonstration
-    rf_probas_input = [rf_proba[0][1]]  # Use the current predicted probability
-    gbm_probas_input = [gbm_proba[0][1]]  # Use the current predicted probability
-
     # Use actual validation data to calculate ROC curve
     fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_model.predict_proba(X_val)[:, 1])
     fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_model.predict_proba(X_val)[:, 1])
@@ -89,7 +84,7 @@ if st.button('Predict'):
     st.subheader("Model Performance")
     plt.figure(figsize=(10, 5))
     plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_model.predict_proba(X_val)[:, 1]):.2f})')
-    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1])::.2f})')
+    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1]):.2f})')
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
