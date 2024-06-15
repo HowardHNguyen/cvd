@@ -18,13 +18,26 @@ import requests
 from io import StringIO
 
 # Load your dataset from GitHub
-url = 'https://github.com/HowardHNguyen/cvd/blob/master/frmgham2.csv'
+url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/frmgham2.csv'
 response = requests.get(url)
-data = pd.read_csv(StringIO(response.text))
+try:
+    data = pd.read_csv(StringIO(response.text), encoding='utf-8')  # Specify encoding if needed
+except pd.errors.ParserError:
+    st.error('Error parsing the CSV file. Please check the file format and content.')
+    st.stop()
+
+# Verify data loading
+if data.empty:
+    st.error('The dataset is empty or could not be loaded.')
+    st.stop()
+
+# Select relevant columns and handle missing values if any
+data = data[['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 'GLUCOSE', 'DIABETES',
+             'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN', 'CVD']]
+data.dropna(inplace=True)  # Handle missing values
 
 # Features and labels
-X = data[['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 'GLUCOSE', 'DIABETES',
-          'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN']]
+X = data.drop(columns=['CVD'])
 y = data['CVD']
 
 # Split the dataset into training and validation sets
@@ -39,16 +52,16 @@ st.title('Cardiovascular Disease Prediction by Howard Nguyen')
 st.write('Select normal values for ★ marked fields if you don\'t know the exact values')
 
 # Input fields
-age = st.number_input('Enter your age:', min_value=0, max_value=120, value=25)
-totchol = st.number_input('Total Cholesterol:', min_value=0, max_value=700, value=200)
-sysbp = st.number_input('Systolic Blood Pressure:', min_value=0, max_value=300, value=120)
-diabp = st.number_input('Diastolic Blood Pressure:', min_value=0, max_value=200, value=80)
-bmi = st.number_input('BMI:', min_value=0.0, max_value=100.0, value=25.0)
+age = st.number_input('Enter your age:', min_value=0, max_value=120, value 25)
+totchol = st.number_input('Total Cholesterol:', min_value=0, max_value=700, value 200)
+sysbp = st.number_input('Systolic Blood Pressure:', min_value=0, max_value=300, value 120)
+diabp = st.number_input('Diastolic Blood Pressure:', min_value=0, max_value=200, value 80)
+bmi = st.number_input('BMI:', min_value=0.0, max_value=100.0, value 25.0)
 cursmoke = st.selectbox('Current Smoker:', options=[0, 1])
-glucose = st.number_input('Glucose:', min_value=0, max_value=500, value=100)
+glucose = st.number_input('Glucose:', min_value=0, max_value=500, value 100)
 diabetes = st.selectbox('Diabetes:', options=[0, 1])
-heartrate = st.number_input('Heart Rate:', min_value=0, max_value=300, value=70)
-cigpday = st.number_input('Cigarettes Per Day:', min_value=0, max_value=100, value=0)
+heartrate = st.number_input('Heart Rate:', min_value=0, max_value=300, value 70)
+cigpday = st.number_input('Cigarettes Per Day:', min_value=0, max_value=100, value 0)
 bpmeds = st.selectbox('On BP Meds:', options=[0, 1])
 stroke = st.selectbox('Stroke:', options=[0, 1])
 hypertension = st.selectbox('Hypertension:', options=[0, 1])
