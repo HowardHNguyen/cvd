@@ -17,11 +17,12 @@ rf_model = joblib.load(io.BytesIO(response_rf.content))
 response_gbm = requests.get(gbm_model_url)
 gbm_model = joblib.load(io.BytesIO(response_gbm.content))
 
-# Load data from Google Colab (adjust as needed)
-data = pd.read_csv('/content/drive/MyDrive/data/frmgham2.csv')
+# Load dataset from GitHub
+data_url = 'https://github.com/HowardHNguyen/cvd/raw/master/frmgham2.csv'
+data = pd.read_csv(data_url)
 
 # Set up the Streamlit app layout
-st.title("Cardiovascular Disease Prediction")
+st.title("Cardiovascular Disease Prediction by Howard Nguyen")
 st.write("Select normal values for * marked fields if you don't know the exact values")
 
 # Input features in the left column
