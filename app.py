@@ -37,6 +37,16 @@ bpmeds = st.selectbox('On BP Meds:', [0, 1])
 stroke = st.selectbox('Stroke:', [0, 1])
 hyperten = st.selectbox('Hypertension:', [0, 1])
 
+# Feature importances plot
+st.subheader("Feature Importances (Random Forest)")
+feature_importances = rf_model.feature_importances_
+features = X.columns
+plt.figure(figsize=(10, 5))
+plt.barh(features, feature_importances, color='royalblue')
+plt.xlabel('Importance')
+plt.ylabel('Feature')
+st.pyplot(plt)
+
 # Make prediction on button click
 if st.button('Predict'):
     input_data = pd.DataFrame({
@@ -56,35 +66,20 @@ if st.button('Predict'):
     st.write(f"Random Forest Prediction: {'CVD' if rf_pred else 'No CVD'} with probability {rf_proba[0][1]:.2f}")
     st.write(f"Gradient Boosting Machine Prediction: {'CVD' if gbm_pred else 'No CVD'} with probability {gbm_proba[0][1]:.2f}")
 
-    # Feature importance
-    st.subheader("Feature Importances (Random Forest)")
-    feature_importances = rf_model.feature_importances_
-    features = input_data.columns
-    plt.figure(figsize=(10, 5))
-    plt.barh(features, feature_importances, color='royalblue')
-    plt.xlabel('Importance')
-    plt.ylabel('Feature')
-    st.pyplot(plt)
-
-    # Dummy labels and predictions for ROC curve
-    y_true = [0, 1]  # Example true labels (replace with actual data if available)
-    rf_probas = rf_proba[0][1]  # Example predicted probabilities for Random Forest
-    gbm_probas = gbm_proba[0][1]  # Example predicted probabilities for Gradient Boosting Machine
-    
-    # Collect example data for ROC curve demonstration
-    y_true = np.random.randint(0, 2, 100)  # Replace with actual validation labels
-    rf_probas = np.random.rand(100)  # Replace with actual Random Forest predicted probabilities
-    gbm_probas = np.random.rand(100)  # Replace with actual Gradient Boosting Machine predicted probabilities
+    # Use actual validation data to calculate ROC curve
+    y_true_input = y  # Use the actual labels from the dataset
+    rf_probas_input = rf_model.predict_proba(X)[:, 1]  # Predicted probabilities for Random Forest
+    gbm_probas_input = gbm_model.predict_proba(X)[:, 1]  # Predicted probabilities for Gradient Boosting Machine
 
     # Calculate ROC curve
-    fpr_rf, tpr_rf, _ = roc_curve(y_true, rf_probas)
-    fpr_gbm, tpr_gbm, _ = roc_curve(y_true, gbm_probas)
+    fpr_rf, tpr_rf, _ = roc_curve(y_true_input, rf_probas_input)
+    fpr_gbm, tpr_gbm, _ = roc_curve(y_true_input, gbm_probas_input)
 
     # Plot ROC curve
     st.subheader("Model Performance")
     plt.figure(figsize=(10, 5))
-    plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_true, rf_probas):.2f})')
-    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_true, gbm_probas):.2f})')
+    plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_true_input, rf_probas_input):.2f})')
+    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_true_input, gbm_probas_input):.2f})')
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
