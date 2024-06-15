@@ -45,31 +45,6 @@ bpmeds = st.selectbox('On BP Meds:', [0, 1])
 stroke = st.selectbox('Stroke:', [0, 1])
 hyperten = st.selectbox('Hypertension:', [0, 1])
 
-# Feature importances plot
-st.subheader("Feature Importances (Random Forest)")
-feature_importances = rf_model.feature_importances_
-features = X.columns
-plt.figure(figsize=(10, 5))
-plt.barh(features, feature_importances, color='royalblue')
-plt.xlabel('Importance')
-plt.ylabel('Feature')
-st.pyplot(plt)
-
-# Static ROC Curve Calculation using validation data
-fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_model.predict_proba(X_val)[:, 1])
-fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_model.predict_proba(X_val)[:, 1])
-
-st.subheader("Model Performance")
-plt.figure(figsize=(10, 5))
-plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_model.predict_proba(X_val)[:, 1]):.2f})')
-plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1]):.2f})')
-plt.plot([0, 1], [0, 1], 'k--')
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('ROC Curve')
-plt.legend()
-st.pyplot(plt)
-
 # Make prediction on button click
 if st.button('Predict'):
     input_data = pd.DataFrame({
@@ -88,3 +63,39 @@ if st.button('Predict'):
     # Show predictions
     st.write(f"Random Forest Prediction: {'CVD' if rf_pred else 'No CVD'} with probability {rf_proba[0][1]:.2f}")
     st.write(f"Gradient Boosting Machine Prediction: {'CVD' if gbm_pred else 'No CVD'} with probability {gbm_proba[0][1]:.2f}")
+
+    # Plot histograms for probabilities
+    st.subheader("Prediction Probability Distribution")
+    plt.figure(figsize=(10, 5))
+    plt.hist(rf_proba[:, 1], bins=10, alpha=0.5, label='Random Forest')
+    plt.hist(gbm_proba[:, 1], bins=10, alpha=0.5, label='Gradient Boosting Machine')
+    plt.xlabel('Probability')
+    plt.ylabel('Frequency')
+    plt.title('Prediction Probability Distribution')
+    plt.legend()
+    st.pyplot(plt)
+
+# Feature importances plot
+st.subheader("Feature Importances (Random Forest)")
+feature_importances = rf_model.feature_importances_
+features = X.columns
+plt.figure(figsize=(10, 5))
+plt.barh(features, feature_importances, color='royalblue')
+plt.xlabel('Importance')
+plt.ylabel('Feature')
+st.pyplot(plt)
+
+# Static ROC Curve Calculation using validation data
+fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_model.predict_proba(X_val)[:, 1])
+fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_model.predict_proba(X_val)[:, 1])
+
+st.subheader("Model Performance")
+plt.figure(figsize=(10, 5))
+plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_model.predict_proba(X_val)[:, 1]):.2f})')
+plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1])::.2f})')
+plt.plot([0, 1], [0, 1], 'k--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend()
+st.pyplot(plt)
