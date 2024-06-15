@@ -8,53 +8,66 @@ Original file is located at
 """
 
 import streamlit as st
-import pandas as pd
 import joblib
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
+
+# Title and instructions
+st.title("Cardiovascular Disease Prediction by Howard Nguyen")
+st.markdown("Select normal values for ★ marked fields if you don't know the exact values")
+
+# Sidebar for input features
+st.sidebar.header("Input Features")
+age = st.sidebar.number_input("Enter your age:", min_value=0, max_value=120, value=25)
+tot_chol = st.sidebar.number_input("Total Cholesterol:", min_value=0, max_value=500, value=200)
+sysbp = st.sidebar.number_input("Systolic Blood Pressure:", min_value=0, max_value=300, value=120)
+diabp = st.sidebar.number_input("Diastolic Blood Pressure:", min_value=0, max_value=200, value=80)
+bmi = st.sidebar.number_input("BMI:", min_value=0.0, max_value=100.0, value=25.0)
+cursmoke = st.sidebar.selectbox("Current Smoker:", options=[0, 1])
+glucose = st.sidebar.number_input("Glucose:", min_value=0, max_value=500, value=100)
+diabetes = st.sidebar.selectbox("Diabetes:", options=[0, 1])
+heartrate = st.sidebar.number_input("Heart Rate:", min_value=0, max_value=200, value=70)
+cigpday = st.sidebar.number_input("Cigarettes Per Day:", min_value=0, max_value=100, value=0)
+bpmeds = st.sidebar.selectbox("On BP Meds:", options=[0, 1])
+stroke = st.sidebar.selectbox("Stroke:", options=[0, 1])
+hyperten = st.sidebar.selectbox("Hypertension:", options=[0, 1])
 
 # Load models
 rf_model = joblib.load('rf_model.pkl')
 gbm_model = joblib.load('gbm_model.pkl')
 
-# App title
-st.title('Cardiovascular Disease Prediction')
+# Predict button
+if st.sidebar.button('Predict'):
+    input_data = np.array([[age, tot_chol, sysbp, diabp, bmi, cursmoke, glucose, diabetes, heartrate, cigpday, bpmeds, stroke, hyperten]])
+    
+    rf_pred = rf_model.predict(input_data)[0]
+    rf_prob = rf_model.predict_proba(input_data)[0][1]
+    
+    gbm_pred = gbm_model.predict(input_data)[0]
+    gbm_prob = gbm_model.predict_proba(input_data)[0][1]
+    
+    st.subheader("Predictions")
+    st.write(f"Random Forest Prediction: {'CVD' if rf_pred else 'No CVD'} with probability {rf_prob:.2f}")
+    st.write(f"Gradient Boosting Machine Prediction: {'CVD' if gbm_pred else 'No CVD'} with probability {gbm_prob:.2f}")
 
-# User input fields
-age = st.number_input('Age', min_value=1, max_value=120, value=25)
-totchol = st.number_input('Total Cholesterol', min_value=100, max_value=400, value=200)
-sysbp = st.number_input('Systolic Blood Pressure', min_value=90, max_value=200, value=120)
-diabp = st.number_input('Diastolic Blood Pressure', min_value=60, max_value=120, value=80)
-bmi = st.number_input('BMI', min_value=10.0, max_value=50.0, value=25.0)
-cursmoke = st.selectbox('Current Smoker', [0, 1])
-glucose = st.number_input('Glucose', min_value=50, max_value=200, value=100)
-diabetes = st.selectbox('Diabetes', [0, 1])
-heartrate = st.number_input('Heart Rate', min_value=40, max_value=180, value=70)
-cigpday = st.number_input('Cigarettes Per Day', min_value=0, max_value=100, value=0)
-bpmeds = st.selectbox('On BP Meds', [0, 1])
-stroke = st.selectbox('Stroke', [0, 1])
-hyperten = st.selectbox('Hypertension', [0, 1])
+# Model performance section
+st.subheader("Model Performance")
 
-# Create dataframe for prediction
-input_data = pd.DataFrame({
-    'AGE': [age],
-    'TOTCHOL': [totchol],
-    'SYSBP': [sysbp],
-    'DIABP': [diabp],
-    'BMI': [bmi],
-    'CURSMOKE': [cursmoke],
-    'GLUCOSE': [glucose],
-    'DIABETES': [diabetes],
-    'HEARTRTE': [heartrate],
-    'CIGPDAY': [cigpday],
-    'BPMEDS': [bpmeds],
-    'STROKE': [stroke],
-    'HYPERTEN': [hyperten]
-})
+# Sample ROC Curve plot
+def plot_roc_curve(model, X, y, label):
+    y_pred_proba = model.predict_proba(X)[::,1]
+    fpr, tpr, _ = roc_curve(y, y_pred_proba)
+    auc_score = auc(fpr, tpr)
+    plt.plot(fpr, tpr, label=f"{label} (AUC = {auc_score:.2f})")
 
-# Predict using the models
-rf_pred = rf_model.predict(input_data)[0]
-gbm_pred = gbm_model.predict(input_data)[0]
+# Assuming you have X_test and y_test
+# plot_roc_curve(rf_model, X_test, y_test, 'Random Forest')
+# plot_roc_curve(gbm_model, X_test, y_test, 'Gradient Boosting Machine')
 
-# Display the predictions
-st.subheader('Predictions')
-st.write(f'Random Forest Prediction: {"CVD" if rf_pred else "No CVD"}')
-st.write(f'Gradient Boosting Machine Prediction: {"CVD" if gbm_pred else "No CVD"}')
+plt.plot([0, 1], [0, 1], linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend(loc='best')
+st.pyplot(plt)
