@@ -11,24 +11,28 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, roc_auc_score
 import joblib
+import requests
+from io import StringIO
 
-# Load the models
+# Load your dataset from GitHub
+url = 'https://github.com/HowardHNguyen/cvd/blob/master/frmgham2.csv'
+response = requests.get(url)
+data = pd.read_csv(StringIO(response.text))
+
+# Features and labels
+X = data[['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 'GLUCOSE', 'DIABETES',
+          'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN']]
+y = data['CVD']
+
+# Split the dataset into training and validation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Load the models (Assuming models are pre-trained)
 rf_model = joblib.load('rf_model.pkl')
 gbm_model = joblib.load('gbm_model.pkl')
-
-# Function to predict using Random Forest
-def predict_rf(data):
-    prediction = rf_model.predict(data)
-    prediction_proba = rf_model.predict_proba(data)
-    return prediction, prediction_proba
-
-# Function to predict using Gradient Boosting Machine
-def predict_gbm(data):
-    prediction = gbm_model.predict(data)
-    prediction_proba = gbm_model.predict_proba(data)
-    return prediction, prediction_proba
 
 # Streamlit app
 st.title('Cardiovascular Disease Prediction by Howard Nguyen')
@@ -59,6 +63,18 @@ input_df = pd.DataFrame(input_data, columns=[
     'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN'
 ])
 
+# Function to predict using Random Forest
+def predict_rf(data):
+    prediction = rf_model.predict(data)
+    prediction_proba = rf_model.predict_proba(data)
+    return prediction, prediction_proba
+
+# Function to predict using Gradient Boosting Machine
+def predict_gbm(data):
+    prediction = gbm_model.predict(data)
+    prediction_proba = gbm_model.predict_proba(data)
+    return prediction, prediction_proba
+
 # Make predictions
 if st.button('Predict'):
     rf_pred, rf_proba = predict_rf(input_df)
@@ -68,24 +84,18 @@ if st.button('Predict'):
     st.write(f'Random Forest Prediction: {"CVD" if rf_pred[0] else "No CVD"} with probability {rf_proba[0][1]:.2f}')
     st.write(f'Gradient Boosting Machine Prediction: {"CVD" if gbm_pred[0] else "No CVD"} with probability {gbm_proba[0][1]:.2f}')
     
-    # Dummy labels and predictions for ROC curve
-    y_true = [0, 1]  # Example true labels (replace with actual data if available)
-    rf_probas = rf_proba[0][1]  # Example predicted probabilities for Random Forest
-    gbm_probas = gbm_proba[0][1]  # Example predicted probabilities for Gradient Boosting Machine
-    
-    # Collect example data for ROC curve demonstration
-    y_true = np.random.randint(0, 2, 100)  # Replace with actual validation labels
-    rf_probas = np.random.rand(100)  # Replace with actual Random Forest predicted probabilities
-    gbm_probas = np.random.rand(100)  # Replace with actual Gradient Boosting Machine predicted probabilities
+    # Use actual validation data to calculate ROC curve
+    y_proba_rf = rf_model.predict_proba(X_val)[:, 1]
+    y_proba_gbm = gbm_model.predict_proba(X_val)[:, 1]
     
     # Plot ROC curve
     st.subheader('Model Performance')
-    fpr_rf, tpr_rf, _ = roc_curve(y_true, rf_probas)
-    fpr_gbm, tpr_gbm, _ = roc_curve(y_true, gbm_probas)
+    fpr_rf, tpr_rf, _ = roc_curve(y_val, y_proba_rf)
+    fpr_gbm, tpr_gbm, _ = roc_curve(y_val, y_proba_gbm)
     
     plt.figure(figsize=(10, 6))
-    plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_true, rf_probas):.2f})')
-    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_true, gbm_probas):.2f})')
+    plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, y_proba_rf):.2f})')
+    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, y_proba_gbm):.2f})')
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
