@@ -4,6 +4,7 @@ import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.model_selection import train_test_split
 
 # Load models
 rf_model = joblib.load('rf_model.pkl')
@@ -17,6 +18,9 @@ data = pd.read_csv(data_url)
 X = data[['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE',
           'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN']]
 y = data['CVD']
+
+# Split the data into training and validation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Define the app
 st.title('Cardiovascular Disease Prediction by Howard Nguyen')
@@ -67,9 +71,9 @@ if st.button('Predict'):
     st.write(f"Gradient Boosting Machine Prediction: {'CVD' if gbm_pred else 'No CVD'} with probability {gbm_proba[0][1]:.2f}")
 
     # Use actual validation data to calculate ROC curve
-    y_true_input = y  # Use the actual labels from the dataset
-    rf_probas_input = rf_model.predict_proba(X)[:, 1]  # Predicted probabilities for Random Forest
-    gbm_probas_input = gbm_model.predict_proba(X)[:, 1]  # Predicted probabilities for Gradient Boosting Machine
+    y_true_input = y_val  # Use the validation labels
+    rf_probas_input = rf_model.predict_proba(X_val)[:, 1]  # Predicted probabilities for Random Forest
+    gbm_probas_input = gbm_model.predict_proba(X_val)[:, 1]  # Predicted probabilities for Gradient Boosting Machine
 
     # Calculate ROC curve
     fpr_rf, tpr_rf, _ = roc_curve(y_true_input, rf_probas_input)
