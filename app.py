@@ -92,3 +92,18 @@ if st.button('Predict'):
     plt.title('ROC Curve')
     plt.legend(loc='best')
     st.pyplot(plt)
+    
+    # Feature importance plot for Random Forest
+    st.subheader('Feature Importances (Random Forest)')
+    feature_importances = rf_model.feature_importances_
+    features = input_df.columns
+    importance_df = pd.DataFrame({'Feature': features, 'Importance': feature_importances})
+    importance_df = importance_df.sort_values(by='Importance', ascending=False)
+    
+    plt.figure(figsize=(10, 6))
+    plt.barh(importance_df['Feature'], importance_df['Importance'])
+    plt.xlabel('Importance')
+    plt.ylabel('Feature')
+    plt.title('Feature Importances')
+    plt.gca().invert_yaxis()
+    st.pyplot(plt)
