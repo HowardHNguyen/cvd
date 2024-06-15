@@ -24,12 +24,16 @@ data = pd.read_csv(data_url)
 
 # Handle missing or infinite values
 data.replace([np.inf, -np.inf], np.nan, inplace=True)
-data.dropna(inplace=True)
+data.fillna(data.mean(), inplace=True)
 
 # Split the dataset for training and validation
 X = data[['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN']]
 y = data['CVD']
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train models (if not already trained)
+# rf_model.fit(X_train, y_train)
+# gbm_model.fit(X_train, y_train)
 
 # Set up the Streamlit app layout
 st.title("Cardiovascular Disease Prediction")
