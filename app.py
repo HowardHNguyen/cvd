@@ -22,6 +22,10 @@ gbm_model = joblib.load(io.BytesIO(response_gbm.content))
 data_url = 'https://github.com/HowardHNguyen/cvd/raw/master/frmgham2.csv'
 data = pd.read_csv(data_url)
 
+# Handle missing or infinite values
+data.replace([np.inf, -np.inf], np.nan, inplace=True)
+data.dropna(inplace=True)
+
 # Split the dataset for training and validation
 X = data[['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN']]
 y = data['CVD']
