@@ -68,6 +68,11 @@ with col2:
         rf_proba = rf_model.predict_proba(input_data)[0][1]  # Probability of CVD for Random Forest
         gbm_proba = gbm_model.predict_proba(input_data)[0][1]  # Probability of CVD for Gradient Boosting Machine
 
+        # Debug: Print input features and predictions
+        st.write("Input features:", features)
+        st.write("Random Forest predicted probability:", rf_proba)
+        st.write("Gradient Boosting Machine predicted probability:", gbm_proba)
+
         # Display predictions
         st.write(f"Random Forest Prediction: CVD with probability {rf_proba:.2f}")
         st.write(f"Gradient Boosting Machine Prediction: CVD with probability {gbm_proba:.2f}")
