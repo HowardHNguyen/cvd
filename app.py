@@ -2,18 +2,26 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+import requests
+import io
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, roc_auc_score
 
-# Load models
-rf_model = joblib.load('/content/drive/MyDrive/models/rf_model.pkl')
-gbm_model = joblib.load('/content/drive/MyDrive/models/gbm_model.pkl')
+# Load models from GitHub
+rf_model_url = 'https://github.com/HowardHNguyen/cvd/raw/master/rf_model.pkl'
+gbm_model_url = 'https://github.com/HowardHNguyen/cvd/raw/master/gbm_model.pkl'
 
-# Load data from Google Colab
+response_rf = requests.get(rf_model_url)
+rf_model = joblib.load(io.BytesIO(response_rf.content))
+
+response_gbm = requests.get(gbm_model_url)
+gbm_model = joblib.load(io.BytesIO(response_gbm.content))
+
+# Load data from Google Colab (adjust as needed)
 data = pd.read_csv('/content/drive/MyDrive/data/frmgham2.csv')
 
 # Set up the Streamlit app layout
-st.title("Cardiovascular Disease Prediction by Howard Nguyen")
+st.title("Cardiovascular Disease Prediction")
 st.write("Select normal values for * marked fields if you don't know the exact values")
 
 # Input features in the left column
