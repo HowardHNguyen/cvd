@@ -69,7 +69,7 @@ if st.button('Predict'):
     st.write(f'Gradient Boosting Machine Prediction: {"CVD" if gbm_pred[0] else "No CVD"} with probability {gbm_proba[0][1]:.2f}')
     
     # Dummy labels and predictions for ROC curve
-    y_true = [0, 1]  # Example true labels
+    y_true = [0, 1]  # Example true labels (replace with actual data if available)
     rf_probas = rf_proba[0]  # Example predicted probabilities for Random Forest
     gbm_probas = gbm_proba[0]  # Example predicted probabilities for Gradient Boosting Machine
     
