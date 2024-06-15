@@ -55,6 +55,21 @@ plt.xlabel('Importance')
 plt.ylabel('Feature')
 st.pyplot(plt)
 
+# Static ROC Curve Calculation using validation data
+fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_model.predict_proba(X_val)[:, 1])
+fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_model.predict_proba(X_val)[:, 1])
+
+st.subheader("Model Performance")
+plt.figure(figsize=(10, 5))
+plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_model.predict_proba(X_val)[:, 1]):.2f})')
+plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1]):.2f})')
+plt.plot([0, 1], [0, 1], 'k--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend()
+st.pyplot(plt)
+
 # Make prediction on button click
 if st.button('Predict'):
     input_data = pd.DataFrame({
@@ -73,22 +88,3 @@ if st.button('Predict'):
     # Show predictions
     st.write(f"Random Forest Prediction: {'CVD' if rf_pred else 'No CVD'} with probability {rf_proba[0][1]:.2f}")
     st.write(f"Gradient Boosting Machine Prediction: {'CVD' if gbm_pred else 'No CVD'} with probability {gbm_proba[0][1]:.2f}")
-
-    # Use actual validation data to calculate ROC curve
-    if len(y_val) > 0:
-        fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_model.predict_proba(X_val)[:, 1])
-        fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_model.predict_proba(X_val)[:, 1])
-
-        # Plot ROC curve
-        st.subheader("Model Performance")
-        plt.figure(figsize=(10, 5))
-        plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_model.predict_proba(X_val)[:, 1]):.2f})')
-        plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1]):.2f})')
-        plt.plot([0, 1], [0, 1], 'k--')
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve')
-        plt.legend()
-        st.pyplot(plt)
-    else:
-        st.write("No valid validation data available to plot ROC curve.")
