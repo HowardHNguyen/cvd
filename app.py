@@ -70,8 +70,11 @@ if st.button('Predict'):
     st.write(f"Random Forest Prediction: {'CVD' if rf_pred else 'No CVD'} with probability {rf_proba[0][1]:.2f}")
     st.write(f"Gradient Boosting Machine Prediction: {'CVD' if gbm_pred else 'No CVD'} with probability {gbm_proba[0][1]:.2f}")
 
+    # Validate the data to avoid issues with invalid values
+    X_val = X_val.replace([np.inf, -np.inf], np.nan).dropna()
+    
     # Use actual validation data to calculate ROC curve
-    y_true_input = y_val  # Use the validation labels
+    y_true_input = y_val[X_val.index]  # Use the corresponding validation labels
     rf_probas_input = rf_model.predict_proba(X_val)[:, 1]  # Predicted probabilities for Random Forest
     gbm_probas_input = gbm_model.predict_proba(X_val)[:, 1]  # Predicted probabilities for Gradient Boosting Machine
 
