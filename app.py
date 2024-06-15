@@ -33,23 +33,7 @@ st.write('Select normal values for * marked fields if you don\'t know the exact 
 col1, col_space, col2 = st.columns([1, 0.1, 1])
 
 with col1:
-    # User inputs with sliders
-    age = st.slider('Enter your age:', min_value=32, max_value=81, value=32)
-    totchol = st.slider('Total Cholesterol:', min_value=107, max_value=696, value=200)
-    sysbp = st.slider('Systolic Blood Pressure:', min_value=83, max_value=295, value=120)
-    diabp = st.slider('Diastolic Blood Pressure:', min_value=30, max_value=150, value=80)
-    bmi = st.slider('BMI:', min_value=14.43, max_value=56.8, value=25.0)
-    cursmoke = st.selectbox('Current Smoker:', [0, 1])
-    glucose = st.slider('Glucose:', min_value=39, max_value=478, value=100)
-    diabetes = st.selectbox('Diabetes:', [0, 1])
-    heartrate = st.slider('Heart Rate:', min_value=37, max_value=220, value=70)
-    cigpday = st.slider('Cigarettes Per Day:', min_value=0, max_value=90, value=0)
-    bpmeds = st.selectbox('On BP Meds:', [0, 1])
-    stroke = st.selectbox('Stroke:', [0, 1])
-    hyperten = st.selectbox('Hypertension:', [0, 1])
-
-with col_space:
-    st.markdown("<div style='height: 100%;'></div>", unsafe_allow_html=True)
+    # User inputs with sliders	age = st.slider('Enter your age:', min_value=32, max_value=81, value=32)	totchol = st.slider('Total Cholesterol:', min_value=107, max_value=696, value=200)	sysbp = st.slider('Systolic Blood Pressure:', min_value=83, max_value=295, value=120)	diabp = st.slider('Diastolic Blood Pressure:', min_value=30, max_value=150, value=80)	bmi = st.slider('BMI:', min_value=14.43, max_value=56.8, value=25.0)	cursmoke = st.selectbox('Current Smoker:', [0, 1])	glucose = st.slider('Glucose:', min_value=39, max_value=478, value=100)	diabetes = st.selectbox('Diabetes:', [0, 1])	heartrate = st.slider('Heart Rate:', min_value=37, max_value=220, value=70)	cigpday = st.slider('Cigarettes Per Day:', min_value=0, max_value=90, value=0)	bpmeds = st.selectbox('On BP Meds:', [0, 1])	stroke = st.selectbox('Stroke:', [0, 1])	hyperten = st.selectbox('Hypertension:', [0, 1])
 
 predict_button = col2.button('Predict')
 
