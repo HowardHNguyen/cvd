@@ -30,7 +30,7 @@ y_val = y_val.loc[X_val.index]
 st.title('Cardiovascular Disease Prediction by Howard Nguyen')
 st.write('Select normal values for * marked fields if you don\'t know the exact values')
 
-col1, col2 = st.columns(2)
+col1, col_space, col2 = st.columns([1, 0.1, 1])
 
 with col1:
     # User inputs with sliders
@@ -48,7 +48,10 @@ with col1:
     stroke = st.selectbox('Stroke:', [0, 1])
     hyperten = st.selectbox('Hypertension:', [0, 1])
 
-predict_button = st.button('Predict')
+with col_space:
+    st.markdown("<div style='height: 100%;'></div>", unsafe_allow_html=True)
+
+predict_button = col2.button('Predict')
 
 if predict_button:
     input_data = pd.DataFrame({
