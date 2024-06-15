@@ -1,104 +1,109 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
-import requests
-import io
+import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.calibration import calibration_curve
 from sklearn.metrics import roc_curve, roc_auc_score
-from sklearn.model_selection import train_test_split
 
-# Load models from local files
-rf_model = joblib.load('rf_model.pkl')
-gbm_model = joblib.load('gbm_model.pkl')
+# Load the calibrated models from GitHub
+rf_model_calibrated = joblib.load('https://github.com/your_github_account/your_repo/raw/main/rf_model_calibrated.pkl')
+gbm_model_calibrated = joblib.load('https://github.com/your_github_account/your_repo/raw/main/gbm_model_calibrated.pkl')
 
-# Load dataset from GitHub
-data_url = 'https://github.com/HowardHNguyen/cvd/raw/master/frmgham2.csv'
-data = pd.read_csv(data_url)
+# Load the dataset
+data = pd.read_csv('https://github.com/your_github_account/your_repo/raw/main/frmgham2.csv')
 
-# Handle missing or infinite values
-data.replace([np.inf, -np.inf], np.nan, inplace=True)
+# Handle missing values by replacing them with the mean of the respective columns
 data.fillna(data.mean(), inplace=True)
 
-# Split the dataset for training and validation
-X = data[['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN']]
-y = data['CVD']
-X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+# Define the feature columns
+feature_columns = ['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 
+                   'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 
+                   'STROKE', 'HYPERTEN']
 
-# Set up the Streamlit app layout
-st.title("Cardiovascular Disease Prediction")
-st.write("Select normal values for * marked fields if you don't know the exact values")
+# Sidebar for input parameters
+st.sidebar.header('Enter your parameters')
 
-# Input features in the left column
-col1, col2 = st.columns([1, 2], gap="large")
+def user_input_features():
+    age = st.sidebar.slider('Enter your age:', 32, 81, 54)
+    totchol = st.sidebar.slider('Total Cholesterol:', 107, 696, 200)
+    sysbp = st.sidebar.slider('Systolic Blood Pressure:', 83, 295, 151)
+    diabp = st.sidebar.slider('Diastolic Blood Pressure:', 30, 150, 89)
+    bmi = st.sidebar.slider('BMI:', 14.43, 56.80, 26.77)
+    cursmoke = st.sidebar.selectbox('Current Smoker:', (0, 1))
+    glucose = st.sidebar.slider('Glucose:', 39, 478, 117)
+    diabetes = st.sidebar.selectbox('Diabetes:', (0, 1))
+    heartrate = st.sidebar.slider('Heart Rate:', 37, 220, 91)
+    cigpday = st.sidebar.slider('Cigarettes Per Day:', 0, 90, 20)
+    bpmeds = st.sidebar.selectbox('On BP Meds:', (0, 1))
+    stroke = st.sidebar.selectbox('Stroke:', (0, 1))
+    hyperten = st.sidebar.selectbox('Hypertension:', (0, 1))
+    
+    data = {
+        'AGE': age,
+        'TOTCHOL': totchol,
+        'SYSBP': sysbp,
+        'DIABP': diabp,
+        'BMI': bmi,
+        'CURSMOKE': cursmoke,
+        'GLUCOSE': glucose,
+        'DIABETES': diabetes,
+        'HEARTRTE': heartrate,
+        'CIGPDAY': cigpday,
+        'BPMEDS': bpmeds,
+        'STROKE': stroke,
+        'HYPERTEN': hyperten
+    }
+    features = pd.DataFrame(data, index=[0])
+    return features
 
-with col1:
-    age = st.slider('Enter your age:', min_value=32, max_value=81, value=54)
-    tot_chol = st.slider('Total Cholesterol:', min_value=107, max_value=696, value=200)
-    sysbp = st.slider('Systolic Blood Pressure:', min_value=83, max_value=295, value=151)
-    diabp = st.slider('Diastolic Blood Pressure:', min_value=30, max_value=150, value=89)
-    bmi = st.slider('BMI:', min_value=14.43, max_value=56.80, value=26.77)
-    cur_smoker = st.selectbox('Current Smoker:', [0, 1])
-    glucose = st.slider('Glucose:', min_value=39, max_value=478, value=117)
-    diabetes = st.selectbox('Diabetes:', [0, 1])
-    heartrate = st.slider('Heart Rate:', min_value=37, max_value=220, value=91)
-    cigs_per_day = st.slider('Cigarettes Per Day:', min_value=0, max_value=90, value=20)
-    bp_meds = st.selectbox('On BP Meds:', [0, 1])
-    prev_strk = st.selectbox('Stroke:', [0, 1])
-    hypertension = st.selectbox('Hypertension:', [0, 1])
+input_df = user_input_features()
 
-# Collect input features
-features = [age, tot_chol, sysbp, diabp, bmi, cur_smoker, glucose, diabetes, heartrate, cigs_per_day, bp_meds, prev_strk, hypertension]
-input_data = np.array(features).reshape(1, -1)
+# Apply the model to make predictions
+rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df)[:, 1]
+gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df)[:, 1]
 
-# Predict and display results in the right column
-with col2:
-    if st.button('Predict'):
-        # Make predictions
-        rf_proba = rf_model.predict_proba(input_data)[0][1]  # Probability of CVD for Random Forest
-        gbm_proba = gbm_model.predict_proba(input_data)[0][1]  # Probability of CVD for Gradient Boosting Machine
+st.write("""
+# Cardiovascular Disease Prediction App
+This app predicts the probability of cardiovascular disease (CVD) using user inputs.
+""")
 
-        # Display predictions
-        st.write(f"Random Forest Prediction: CVD with probability {rf_proba:.2f}")
-        st.write(f"Gradient Boosting Machine Prediction: CVD with probability {gbm_proba:.2f}")
+st.subheader('Predictions')
+st.write(f"Random Forest Prediction: CVD with probability {rf_proba_calibrated[0]:.2f}")
+st.write(f"Gradient Boosting Machine Prediction: CVD with probability {gbm_proba_calibrated[0]:.2f}")
 
-        # Plot Prediction Probability Distribution
-        fig, ax = plt.subplots()
-        ax.bar(['Random Forest', 'Gradient Boosting Machine'], [rf_proba, gbm_proba], color=['blue', 'orange'])
-        ax.set_ylim(0, 1)
-        ax.set_ylabel('Probability')
-        ax.set_title('Prediction Probability Distribution')
-        st.pyplot(fig)
+# Plot the prediction probability distribution
+st.subheader('Prediction Probability Distribution')
+fig, ax = plt.subplots()
+bars = ax.bar(['Random Forest', 'Gradient Boosting Machine'], [rf_proba_calibrated[0], gbm_proba_calibrated[0]], color=['blue', 'orange'])
+ax.set_ylim(0, 1)
+ax.set_ylabel('Probability')
+for bar in bars:
+    yval = bar.get_height()
+    ax.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}', va='bottom')  # va: vertical alignment
+st.pyplot(fig)
 
-        # Feature importances for Random Forest
-        st.subheader("Feature Importances (Random Forest)")
-        rf_importances = rf_model.feature_importances_
-        feature_names = ['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN']
-        importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': rf_importances})
-        importance_df = importance_df.sort_values(by='Importance', ascending=False)
+# Plot feature importances for Random Forest
+st.subheader('Feature Importances (Random Forest)')
+fig, ax = plt.subplots()
+importances = rf_model_calibrated.feature_importances_
+indices = np.argsort(importances)
+ax.barh(range(len(indices)), importances[indices], color='blue', align='center')
+ax.set_yticks(range(len(indices)))
+ax.set_yticklabels([feature_columns[i] for i in indices])
+ax.set_xlabel('Importance')
+st.pyplot(fig)
 
-        fig, ax = plt.subplots()
-        ax.barh(importance_df['Feature'], importance_df['Importance'], color='blue')
-        ax.set_xlabel('Importance')
-        ax.set_title('Feature Importances')
-        st.pyplot(fig)
-
-        # ROC Curve and AUC
-        st.subheader("Model Performance")
-        
-        # Generate ROC curve data from the validation set
-        rf_probas_val = rf_model.predict_proba(X_val)[:, 1]
-        gbm_probas_val = gbm_model.predict_proba(X_val)[:, 1]
-
-        fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_probas_val)
-        fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_probas_val)
-
-        fig, ax = plt.subplots()
-        ax.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_probas_val):.2f})')
-        ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_probas_val):.2f})')
-        ax.plot([0, 1], [0, 1], linestyle='--', color='gray')
-        ax.set_xlabel('False Positive Rate')
-        ax.set_ylabel('True Positive Rate')
-        ax.set_title('ROC Curve')
-        ax.legend()
-        st.pyplot(fig)
+# Plot ROC curve for both models
+st.subheader('Model Performance')
+fig, ax = plt.subplots()
+fpr_rf, tpr_rf, _ = roc_curve(data['CVD'], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1])
+fpr_gbm, tpr_gbm, _ = roc_curve(data['CVD'], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1])
+ax.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(data["CVD"], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
+ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(data["CVD"], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
+ax.plot([0, 1], [0, 1], 'k--')
+ax.set_xlabel('False Positive Rate')
+ax.set_ylabel('True Positive Rate')
+ax.set_title('ROC Curve')
+ax.legend(loc='best')
+st.pyplot(fig)
