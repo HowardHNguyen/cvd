@@ -70,8 +70,13 @@ if st.button('Predict'):
     
     # Dummy labels and predictions for ROC curve
     y_true = [0, 1]  # Example true labels (replace with actual data if available)
-    rf_probas = rf_proba[0]  # Example predicted probabilities for Random Forest
-    gbm_probas = gbm_proba[0]  # Example predicted probabilities for Gradient Boosting Machine
+    rf_probas = rf_proba[0][1]  # Example predicted probabilities for Random Forest
+    gbm_probas = gbm_proba[0][1]  # Example predicted probabilities for Gradient Boosting Machine
+    
+    # Collect example data for ROC curve demonstration
+    y_true = np.random.randint(0, 2, 100)  # Replace with actual validation labels
+    rf_probas = np.random.rand(100)  # Replace with actual Random Forest predicted probabilities
+    gbm_probas = np.random.rand(100)  # Replace with actual Gradient Boosting Machine predicted probabilities
     
     # Plot ROC curve
     st.subheader('Model Performance')
