@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_curve, roc_auc_score, RocCurveDisplay
+from sklearn.metrics import roc_curve, roc_auc_score
 import joblib
 import requests
 from io import StringIO
@@ -97,20 +97,19 @@ if st.button('Predict'):
     st.write(f'Random Forest Prediction: {"CVD" if rf_pred[0] else "No CVD"} with probability {rf_proba[0][1]:.2f}')
     st.write(f'Gradient Boosting Machine Prediction: {"CVD" if gbm_pred[0] else "No CVD"} with probability {gbm_proba[0][1]:.2f}')
     
-    # Use input data to calculate ROC curve
-    y_true_input = [1 if diabetes else 0]  # Adjust this according to your data
-    rf_probas_input = [rf_proba[0][1]]
-    gbm_probas_input = [gbm_proba[0][1]]
+    # Use validation data to calculate ROC curve
+    rf_proba_val = rf_model.predict_proba(X_val)[:, 1]
+    gbm_proba_val = gbm_model.predict_proba(X_val)[:, 1]
     
     # Plot ROC curve
     st.subheader('Model Performance')
     plt.figure(figsize=(10, 6))
     
-    fpr_rf, tpr_rf, _ = roc_curve(y_true_input, rf_probas_input)
-    fpr_gbm, tpr_gbm, _ = roc_curve(y_true_input, gbm_probas_input)
+    fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_proba_val)
+    fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_proba_val)
     
-    plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_true_input, rf_probas_input):.2f})')
-    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_true_input, gbm_probas_input):.2f})')
+    plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_proba_val):.2f})')
+    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_proba_val):.2f})')
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
