@@ -1,8 +1,7 @@
 streamlit
-scikit-learn==1.2.0
-pandas
 numpy
+pandas
+scikit-learn
+matplotlib
 joblib
 tensorflow
-keras
-git+https://github.com/keras-team/keras.git
