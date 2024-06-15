@@ -24,7 +24,9 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_st
 
 # Ensure there are no NaN or infinite values in the validation data
 X_val.replace([np.inf, -np.inf], np.nan, inplace=True)
-X_val.dropna(inplace=True)
+non_nan_indices = X_val.dropna().index
+X_val = X_val.dropna()
+y_val = y_val.loc[non_nan_indices]
 
 # Define the app
 st.title('Cardiovascular Disease Prediction by Howard Nguyen')
@@ -87,7 +89,7 @@ if st.button('Predict'):
     st.subheader("Model Performance")
     plt.figure(figsize=(10, 5))
     plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_model.predict_proba(X_val)[:, 1]):.2f})')
-    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1])::.2f})')
+    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1]):.2f})')
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
