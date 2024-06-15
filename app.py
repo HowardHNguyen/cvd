@@ -23,10 +23,8 @@ y = data['CVD']
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Ensure there are no NaN or infinite values in the validation data
-X_val.replace([np.inf, -np.inf], np.nan, inplace=True)
-non_nan_indices = X_val.dropna().index
-X_val = X_val.dropna()
-y_val = y_val.loc[non_nan_indices]
+X_val = X_val.replace([np.inf, -np.inf], np.nan).dropna()
+y_val = y_val.loc[X_val.index]
 
 # Define the app
 st.title('Cardiovascular Disease Prediction by Howard Nguyen')
@@ -77,17 +75,20 @@ if st.button('Predict'):
     st.write(f"Gradient Boosting Machine Prediction: {'CVD' if gbm_pred else 'No CVD'} with probability {gbm_proba[0][1]:.2f}")
 
     # Use actual validation data to calculate ROC curve
-    fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_model.predict_proba(X_val)[:, 1])
-    fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_model.predict_proba(X_val)[:, 1])
+    if len(y_val) > 0:
+        fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_model.predict_proba(X_val)[:, 1])
+        fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_model.predict_proba(X_val)[:, 1])
 
-    # Plot ROC curve
-    st.subheader("Model Performance")
-    plt.figure(figsize=(10, 5))
-    plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_model.predict_proba(X_val)[:, 1])::.2f})')
-    plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1]):.2f})')
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('ROC Curve')
-    plt.legend()
-    st.pyplot(plt)
+        # Plot ROC curve
+        st.subheader("Model Performance")
+        plt.figure(figsize=(10, 5))
+        plt.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_model.predict_proba(X_val)[:, 1]):.2f})')
+        plt.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_model.predict_proba(X_val)[:, 1]):.2f})')
+        plt.plot([0, 1], [0, 1], 'k--')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curve')
+        plt.legend()
+        st.pyplot(plt)
+    else:
+        st.write("No valid validation data available to plot ROC curve.")
