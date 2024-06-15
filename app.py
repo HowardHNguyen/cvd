@@ -8,14 +8,14 @@ from sklearn.metrics import roc_curve, roc_auc_score
 
 # Load the calibrated models from GitHub
 try:
-    rf_model_calibrated = joblib.load('https://github.com/HowardHNguyen/cvd/raw/master/rf_model_calibrated.pkl')
-    gbm_model_calibrated = joblib.load('https://github.com/HowardHNguyen/cvd/raw/master/gbm_model_calibrated.pkl')
+    rf_model_calibrated = joblib.load('https://github.com/HowardHNguyen/cvd/raw/main/rf_model_calibrated.pkl')
+    gbm_model_calibrated = joblib.load('https://github.com/HowardHNguyen/cvd/raw/main/gbm_model_calibrated.pkl')
 except Exception as e:
     st.error(f"Error loading models: {e}")
 
 # Load the dataset
 try:
-    data = pd.read_csv('https://github.com/HowardHNguyen/cvd/raw/master/frmgham2.csv')
+    data = pd.read_csv('https://github.com/HowardHNguyen/cvd/raw/main/frmgham2.csv')
 except Exception as e:
     st.error(f"Error loading data: {e}")
 
