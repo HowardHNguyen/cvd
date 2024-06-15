@@ -8,15 +8,9 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.model_selection import train_test_split
 
-# Load models from GitHub
-rf_model_url = 'https://github.com/HowardHNguyen/cvd/raw/master/rf_model.pkl'
-gbm_model_url = 'https://github.com/HowardHNguyen/cvd/raw/master/gbm_model.pkl'
-
-response_rf = requests.get(rf_model_url)
-rf_model = joblib.load(io.BytesIO(response_rf.content))
-
-response_gbm = requests.get(gbm_model_url)
-gbm_model = joblib.load(io.BytesIO(response_gbm.content))
+# Load models from local files
+rf_model = joblib.load('rf_model.pkl')
+gbm_model = joblib.load('gbm_model.pkl')
 
 # Load dataset from GitHub
 data_url = 'https://github.com/HowardHNguyen/cvd/raw/master/frmgham2.csv'
@@ -30,10 +24,6 @@ data.fillna(data.mean(), inplace=True)
 X = data[['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN']]
 y = data['CVD']
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Train models (if not already trained)
-# rf_model.fit(X_train, y_train)
-# gbm_model.fit(X_train, y_train)
 
 # Set up the Streamlit app layout
 st.title("Cardiovascular Disease Prediction")
@@ -67,11 +57,6 @@ with col2:
         # Make predictions
         rf_proba = rf_model.predict_proba(input_data)[0][1]  # Probability of CVD for Random Forest
         gbm_proba = gbm_model.predict_proba(input_data)[0][1]  # Probability of CVD for Gradient Boosting Machine
-
-        # Debug: Print input features and predictions
-        st.write("Input features:", features)
-        st.write("Random Forest predicted probability:", rf_proba)
-        st.write("Gradient Boosting Machine predicted probability:", gbm_proba)
 
         # Display predictions
         st.write(f"Random Forest Prediction: CVD with probability {rf_proba:.2f}")
