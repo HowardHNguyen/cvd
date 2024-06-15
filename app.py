@@ -6,6 +6,7 @@ import requests
 import io
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.model_selection import train_test_split
 
 # Load models from GitHub
 rf_model_url = 'https://github.com/HowardHNguyen/cvd/raw/master/rf_model.pkl'
@@ -21,8 +22,13 @@ gbm_model = joblib.load(io.BytesIO(response_gbm.content))
 data_url = 'https://github.com/HowardHNguyen/cvd/raw/master/frmgham2.csv'
 data = pd.read_csv(data_url)
 
+# Split the dataset for training and validation
+X = data[['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 'STROKE', 'HYPERTEN']]
+y = data['CVD']
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
 # Set up the Streamlit app layout
-st.title("Cardiovascular Disease Prediction by Howard Nguyen")
+st.title("Cardiovascular Disease Prediction")
 st.write("Select normal values for * marked fields if you don't know the exact values")
 
 # Input features in the left column
@@ -82,17 +88,16 @@ with col2:
         # ROC Curve and AUC
         st.subheader("Model Performance")
         
-        # Dummy labels and predictions for ROC curve demonstration
-        y_val = np.random.randint(0, 2, 100)  # Example true labels
-        rf_probas = np.random.rand(100)  # Example predicted probabilities for Random Forest
-        gbm_probas = np.random.rand(100)  # Example predicted probabilities for Gradient Boosting Machine
+        # Generate ROC curve data from the validation set
+        rf_probas_val = rf_model.predict_proba(X_val)[:, 1]
+        gbm_probas_val = gbm_model.predict_proba(X_val)[:, 1]
 
-        fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_probas)
-        fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_probas)
+        fpr_rf, tpr_rf, _ = roc_curve(y_val, rf_probas_val)
+        fpr_gbm, tpr_gbm, _ = roc_curve(y_val, gbm_probas_val)
 
         fig, ax = plt.subplots()
-        ax.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_probas):.2f})')
-        ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_probas):.2f})')
+        ax.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(y_val, rf_probas_val):.2f})')
+        ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(y_val, gbm_probas_val):.2f})')
         ax.plot([0, 1], [0, 1], linestyle='--', color='gray')
         ax.set_xlabel('False Positive Rate')
         ax.set_ylabel('True Positive Rate')
