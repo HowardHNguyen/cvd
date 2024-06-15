@@ -8,19 +8,20 @@ from sklearn.metrics import roc_curve, roc_auc_score
 
 # Load the calibrated models from GitHub
 try:
-    rf_model_calibrated = joblib.load('https://github.com/HowardHNguyen/cvd/blob/master/rf_model_calibrated.pkl')
-    gbm_model_calibrated = joblib.load('https://github.com/HowardHNguyen/cvd/blob/master/gbm_model_calibrated.pkl')
+    rf_model_calibrated = joblib.load('https://github.com/HowardHNguyen/cvd/raw/master/rf_model_calibrated.pkl')
+    gbm_model_calibrated = joblib.load('https://github.com/HowardHNguyen/cvd/raw/master/gbm_model_calibrated.pkl')
 except Exception as e:
     st.error(f"Error loading models: {e}")
 
 # Load the dataset
 try:
-    data = pd.read_csv('https://github.com/HowardHNguyen/cvd/blob/master/frmgham2.csv')
+    data = pd.read_csv('https://github.com/HowardHNguyen/cvd/raw/master/frmgham2.csv')
 except Exception as e:
     st.error(f"Error loading data: {e}")
 
 # Handle missing values by replacing them with the mean of the respective columns
-data.fillna(data.mean(), inplace=True)
+if 'data' in locals():
+    data.fillna(data.mean(), inplace=True)
 
 # Define the feature columns
 feature_columns = ['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 
@@ -119,12 +120,4 @@ try:
     fpr_rf, tpr_rf, _ = roc_curve(data['CVD'], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1])
     fpr_gbm, tpr_gbm, _ = roc_curve(data['CVD'], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1])
     ax.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(data["CVD"], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
-    ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(data["CVD"], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
-    ax.plot([0, 1], [0, 1], 'k--')
-    ax.set_xlabel('False Positive Rate')
-    ax.set_ylabel('True Positive Rate')
-    ax.set_title('ROC Curve')
-    ax.legend(loc='best')
-    st.pyplot(fig)
-except Exception as e:
-    st.error(f"Error plotting ROC curve: {e}")
+    ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (A
