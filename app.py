@@ -140,8 +140,8 @@ if st.sidebar.button('Predict'):
         ax.set_yticklabels([feature_columns[i] for i in indices])
         ax.set_xlabel('Importance')
         st.pyplot(fig)
-    except:
-        pass
+    except Exception as e:
+        st.error(f"Error plotting feature importances: {e}")
 
     # Plot ROC curve for both models
     st.subheader('Model Performance')
