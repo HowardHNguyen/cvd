@@ -161,5 +161,5 @@ if st.sidebar.button('Predict'):
     except Exception as e:
         st.error(f"Error plotting ROC curve: {e}")
 else:
-    st.write("## Cardiovascular Disease Prediction App")
-    st.write("### Enter your parameters and click Predict to get the results.")
+    st.write("## CVD Prediction App by Howard Nguyen")
+    st.write("#### Enter your parameters and click Predict to get the results.")
