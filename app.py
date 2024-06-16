@@ -132,8 +132,9 @@ if st.sidebar.button('Predict'):
     # Plot feature importances for Random Forest
     st.subheader('Feature Importances (Random Forest)')
     try:
+        rf_base_model = rf_model_calibrated.estimator  # Access the base estimator
         fig, ax = plt.subplots()
-        importances = rf_model_calibrated.base_estimator_.feature_importances_
+        importances = rf_base_model.feature_importances_
         indices = np.argsort(importances)
         ax.barh(range(len(indices)), importances[indices], color='blue', align='center')
         ax.set_yticks(range(len(indices)))
