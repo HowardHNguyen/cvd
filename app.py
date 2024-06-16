@@ -104,14 +104,14 @@ if st.sidebar.button('Predict'):
         st.error(f"Error making predictions: {e}")
 
     st.write("""
-    # Cardiovascular Disease Prediction App
+    # CVD Prediction App by Howard Nguyen
     This app predicts the probability of cardiovascular disease (CVD) using user inputs.
     """)
 
     st.subheader('Predictions')
     try:
-        st.write(f"Random Forest Prediction: CVD with probability {rf_proba_calibrated[0]:.2f}")
-        st.write(f"Gradient Boosting Machine Prediction: CVD with probability {gbm_proba_calibrated[0]:.2f}")
+        st.write(f"- Random Forest model: Your CVD with probability prediction is {rf_proba_calibrated[0]:.2f}")
+        st.write(f"- Gradient Boosting Machine model: Your CVD with probability prediction is {gbm_proba_calibrated[0]:.2f}")
     except:
         pass
 
