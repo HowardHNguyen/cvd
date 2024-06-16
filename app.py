@@ -5,17 +5,46 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.calibration import calibration_curve
 from sklearn.metrics import roc_curve, roc_auc_score
+import os
+import urllib.request
 
-# Load the calibrated models from GitHub
+# Function to download the file
+def download_file(url, dest):
+    try:
+        urllib.request.urlretrieve(url, dest)
+        return True
+    except Exception as e:
+        st.error(f"Error downloading {url}: {e}")
+        return False
+
+# URLs for the model files
+rf_model_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/rf_model_calibrated.pkl'
+gbm_model_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/gbm_model_calibrated.pkl'
+
+# Local paths for the model files
+rf_model_path = 'rf_model_calibrated.pkl'
+gbm_model_path = 'gbm_model_calibrated.pkl'
+
+# Download the models if not already present
+if not os.path.exists(rf_model_path):
+    st.info(f"Downloading {rf_model_path}...")
+    download_file(rf_model_url, rf_model_path)
+
+if not os.path.exists(gbm_model_path):
+    st.info(f"Downloading {gbm_model_path}...")
+    download_file(gbm_model_url, gbm_model_path)
+
+# Load the calibrated models
 try:
-    rf_model_calibrated = joblib.load('https://raw.githubusercontent.com/HowardHNguyen/cvd/master/rf_model_calibrated.pkl')
-    gbm_model_calibrated = joblib.load('https://raw.githubusercontent.com/HowardHNguyen/cvd/master/gbm_model_calibrated.pkl')
+    rf_model_calibrated = joblib.load(rf_model_path)
+    gbm_model_calibrated = joblib.load(gbm_model_path)
 except Exception as e:
     st.error(f"Error loading models: {e}")
 
 # Load the dataset
+data_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/frmgham2.csv'
 try:
-    data = pd.read_csv('https://raw.githubusercontent.com/HowardHNguyen/cvd/master/frmgham2.csv')
+    data = pd.read_csv(data_url)
 except Exception as e:
     st.error(f"Error loading data: {e}")
 
