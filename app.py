@@ -104,7 +104,7 @@ if st.sidebar.button('Predict'):
         st.error(f"Error making predictions: {e}")
 
     st.write("""
-    # CVD Prediction App by Howard Nguyen
+    ## Your CVD Probability Prediction Results
     This app predicts the probability of cardiovascular disease (CVD) using user inputs.
     """)
 
