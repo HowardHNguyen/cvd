@@ -96,65 +96,69 @@ def user_input_features():
 input_df = user_input_features()
 
 # Apply the model to make predictions
-try:
-    rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df)[:, 1]
-    gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df)[:, 1]
-except Exception as e:
-    st.error(f"Error making predictions: {e}")
+if st.sidebar.button('Predict'):
+    try:
+        rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df)[:, 1]
+        gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df)[:, 1]
+    except Exception as e:
+        st.error(f"Error making predictions: {e}")
 
-st.write("""
-# Cardiovascular Disease Prediction App
-This app predicts the probability of cardiovascular disease (CVD) using user inputs.
-""")
+    st.write("""
+    # Cardiovascular Disease Prediction App
+    This app predicts the probability of cardiovascular disease (CVD) using user inputs.
+    """)
 
-st.subheader('Predictions')
-try:
-    st.write(f"Random Forest Prediction: CVD with probability {rf_proba_calibrated[0]:.2f}")
-    st.write(f"Gradient Boosting Machine Prediction: CVD with probability {gbm_proba_calibrated[0]:.2f}")
-except:
-    pass
+    st.subheader('Predictions')
+    try:
+        st.write(f"Random Forest Prediction: CVD with probability {rf_proba_calibrated[0]:.2f}")
+        st.write(f"Gradient Boosting Machine Prediction: CVD with probability {gbm_proba_calibrated[0]:.2f}")
+    except:
+        pass
 
-# Plot the prediction probability distribution
-st.subheader('Prediction Probability Distribution')
-try:
-    fig, ax = plt.subplots()
-    bars = ax.bar(['Random Forest', 'Gradient Boosting Machine'], [rf_proba_calibrated[0], gbm_proba_calibrated[0]], color=['blue', 'orange'])
-    ax.set_ylim(0, 1)
-    ax.set_ylabel('Probability')
-    for bar in bars:
-        yval = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}', va='bottom')  # va: vertical alignment
-    st.pyplot(fig)
-except:
-    pass
+    # Plot the prediction probability distribution
+    st.subheader('Prediction Probability Distribution')
+    try:
+        fig, ax = plt.subplots()
+        bars = ax.bar(['Random Forest', 'Gradient Boosting Machine'], [rf_proba_calibrated[0], gbm_proba_calibrated[0]], color=['blue', 'orange'])
+        ax.set_ylim(0, 1)
+        ax.set_ylabel('Probability')
+        for bar in bars:
+            yval = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}', va='bottom')  # va: vertical alignment
+        st.pyplot(fig)
+    except:
+        pass
 
-# Plot feature importances for Random Forest
-st.subheader('Feature Importances (Random Forest)')
-try:
-    fig, ax = plt.subplots()
-    importances = rf_model_calibrated.feature_importances_
-    indices = np.argsort(importances)
-    ax.barh(range(len(indices)), importances[indices], color='blue', align='center')
-    ax.set_yticks(range(len(indices)))
-    ax.set_yticklabels([feature_columns[i] for i in indices])
-    ax.set_xlabel('Importance')
-    st.pyplot(fig)
-except:
-    pass
+    # Plot feature importances for Random Forest
+    st.subheader('Feature Importances (Random Forest)')
+    try:
+        fig, ax = plt.subplots()
+        importances = rf_model_calibrated.feature_importances_
+        indices = np.argsort(importances)
+        ax.barh(range(len(indices)), importances[indices], color='blue', align='center')
+        ax.set_yticks(range(len(indices)))
+        ax.set_yticklabels([feature_columns[i] for i in indices])
+        ax.set_xlabel('Importance')
+        st.pyplot(fig)
+    except:
+        pass
 
-# Plot ROC curve for both models
-st.subheader('Model Performance')
-try:
-    fig, ax = plt.subplots()
-    fpr_rf, tpr_rf, _ = roc_curve(data['CVD'], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1])
-    fpr_gbm, tpr_gbm, _ = roc_curve(data['CVD'], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1])
-    ax.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(data["CVD"], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
-    ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(data["CVD"], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
-    ax.plot([0, 1], [0, 1], 'k--')
-    ax.set_xlabel('False Positive Rate')
-    ax.set_ylabel('True Positive Rate')
-    ax.set_title('ROC Curve')
-    ax.legend(loc='best')
-    st.pyplot(fig)
-except Exception as e:
-    st.error(f"Error plotting ROC curve: {e}")
+    # Plot ROC curve for both models
+    st.subheader('Model Performance')
+    try:
+        fig, ax = plt.subplots()
+        fpr_rf, tpr_rf, _ = roc_curve(data['CVD'], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1])
+        fpr_gbm, tpr_gbm, _ = roc_curve(data['CVD'], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1])
+        ax.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(data["CVD"], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
+        ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(data["CVD"], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
+        ax.plot([0, 1], [0, 1], 'k--')
+        ax.set_xlabel('False Positive Rate')
+        ax.set_ylabel('True Positive Rate')
+        ax.set_title('ROC Curve')
+        ax.legend(loc='best')
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error plotting ROC curve: {e}")
+else:
+    st.write("## Cardiovascular Disease Prediction App")
+    st.write("### Enter your parameters and click Predict to get the results.")
