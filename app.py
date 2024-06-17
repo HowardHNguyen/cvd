@@ -129,21 +129,6 @@ if st.sidebar.button('Predict'):
     except:
         pass
 
-    # Plot feature importances for Random Forest
-    st.subheader('Feature Importances (Random Forest)')
-    try:
-        rf_base_model = rf_model_calibrated.estimator  # Access the base estimator
-        fig, ax = plt.subplots()
-        importances = rf_base_model.feature_importances_
-        indices = np.argsort(importances)
-        ax.barh(range(len(indices)), importances[indices], color='blue', align='center')
-        ax.set_yticks(range(len(indices)))
-        ax.set_yticklabels([feature_columns[i] for i in indices])
-        ax.set_xlabel('Importance')
-        st.pyplot(fig)
-    except Exception as e:
-        st.error(f"Error plotting feature importances: {e}")
-
     # Plot ROC curve for both models
     st.subheader('Model Performance')
     try:
@@ -160,6 +145,22 @@ if st.sidebar.button('Predict'):
         st.pyplot(fig)
     except Exception as e:
         st.error(f"Error plotting ROC curve: {e}")
+
+    # Plot feature importances for Random Forest
+    st.subheader('Feature Importances (Random Forest)')
+    try:
+        rf_base_model = rf_model_calibrated.estimator  # Access the base estimator
+        fig, ax = plt.subplots()
+        importances = rf_base_model.feature_importances_
+        indices = np.argsort(importances)
+        ax.barh(range(len(indices)), importances[indices], color='blue', align='center')
+        ax.set_yticks(range(len(indices)))
+        ax.set_yticklabels([feature_columns[i] for i in indices])
+        ax.set_xlabel('Importance')
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error plotting feature importances: {e}")
+
 else:
     st.write("## CVD Prediction App by Howard Nguyen")
     st.write("#### Enter your parameters and click Predict to get the results.")
