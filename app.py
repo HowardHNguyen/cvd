@@ -66,13 +66,13 @@ def user_input_features():
     sysbp = st.sidebar.slider('Systolic Blood Pressure:', 83, 295, 151)
     diabp = st.sidebar.slider('Diastolic Blood Pressure:', 30, 150, 89)
     bmi = st.sidebar.slider('BMI:', 14.43, 56.80, 26.77)
-    cursmoke = st.sidebar.selectbox('Current Smoker:', (0, 1))
-    glucose = st.sidebar.slider('Glucose:', 39, 478, 117)
-    diabetes = st.sidebar.selectbox('Diabetes:', (0, 1))
     heartrate = st.sidebar.slider('Heart Rate:', 37, 220, 91)
+    glucose = st.sidebar.slider('Glucose:', 39, 478, 117)
     cigpday = st.sidebar.slider('Cigarettes Per Day:', 0, 90, 20)
-    bpmeds = st.sidebar.selectbox('On BP Meds:', (0, 1))
     stroke = st.sidebar.selectbox('Stroke:', (0, 1))
+    cursmoke = st.sidebar.selectbox('Current Smoker:', (0, 1))   
+    diabetes = st.sidebar.selectbox('Diabetes:', (0, 1))
+    bpmeds = st.sidebar.selectbox('On BP Meds:', (0, 1))
     hyperten = st.sidebar.selectbox('Hypertension:', (0, 1))
     
     data = {
