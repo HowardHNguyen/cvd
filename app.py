@@ -62,13 +62,13 @@ st.sidebar.header('Enter your parameters')
 
 def user_input_features():
     age = st.sidebar.slider('Enter your age:', 32, 81, 54)
-    totchol = st.sidebar.slider('Total Cholesterol:', 107, 696, 200)
-    sysbp = st.sidebar.slider('Systolic Blood Pressure:', 83, 295, 151)
-    diabp = st.sidebar.slider('Diastolic Blood Pressure:', 30, 150, 89)
-    bmi = st.sidebar.slider('BMI:', 14.43, 56.80, 26.77)
-    heartrate = st.sidebar.slider('Heart Rate:', 37, 220, 91)
+    totchol = st.sidebar.slider('Total Cholesterol:', 107, 696, 175)
+    sysbp = st.sidebar.slider('Systolic Blood Pressure:', 83, 295, 130)
+    diabp = st.sidebar.slider('Diastolic Blood Pressure:', 30, 150, 80)
+    bmi = st.sidebar.slider('BMI:', 14.43, 56.80, 28.27)
+    heartrate = st.sidebar.slider('Heart Rate:', 37, 220, 60)
     glucose = st.sidebar.slider('Glucose:', 39, 478, 117)
-    cigpday = st.sidebar.slider('Cigarettes Per Day:', 0, 90, 20)
+    cigpday = st.sidebar.slider('Cigarettes Per Day:', 0, 90, 0)
     stroke = st.sidebar.selectbox('Stroke:', (0, 1))
     cursmoke = st.sidebar.selectbox('Current Smoker:', (0, 1))   
     diabetes = st.sidebar.selectbox('Diabetes:', (0, 1))
@@ -96,7 +96,7 @@ def user_input_features():
 input_df = user_input_features()
 
 # Apply the model to make predictions
-if st.sidebar.button('Predict'):
+if st.sidebar.button('PREDICT NOW'):
     try:
         rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df)[:, 1]
         gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df)[:, 1]
@@ -147,7 +147,7 @@ if st.sidebar.button('Predict'):
         st.error(f"Error plotting ROC curve: {e}")
 
     # Plot feature importances for Random Forest
-    st.subheader('Feature Importances (Random Forest)')
+    st.subheader('Risk Factors / Feature Importances (RF)')
     try:
         rf_base_model = rf_model_calibrated.estimator  # Access the base estimator
         fig, ax = plt.subplots()
@@ -160,6 +160,23 @@ if st.sidebar.button('Predict'):
         st.pyplot(fig)
     except Exception as e:
         st.error(f"Error plotting feature importances: {e}")
+
+    # Add explanations for the features
+    st.markdown("""
+    - **Stroke:** The history of stroke is the most significant factor.
+    - **BMI (Body Mass Index):** Higher BMI indicates higher risk.
+    - **SYSBP (Systolic Blood Pressure):** Elevated systolic blood pressure is a critical indicator.
+    - **TOTCHOL (Total Cholesterol):** Higher cholesterol levels contribute to the risk.
+    - **GLUCOSE:** Higher glucose levels are also important in the prediction.
+    - **AGE:** Older age increases the risk of CVD.
+    - **DIABP (Diastolic Blood Pressure):** Elevated diastolic blood pressure plays a role.
+    - **HEARTRTE (Heart Rate):** Higher heart rate is a contributing factor.
+    - **CIGPDAY (Cigarettes Per Day):** The number of cigarettes smoked per day impacts the risk.
+    - **BPMEDS (Blood Pressure Medication):** Use of BP medication is taken into account.
+    - **HYPERTEN (Hypertension):** Having hypertension is a minor but notable factor.
+    - **DIABETES:** The presence of diabetes is a minor factor in this prediction.
+    - **CURSMOKE (Current Smoker):** Whether the individual is currently smoking has the least impact compared to other factors.
+    """)
 
 else:
     st.write("## CVD Prediction App by Howard Nguyen")
