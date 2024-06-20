@@ -40,6 +40,7 @@ try:
     gbm_model_calibrated = joblib.load(gbm_model_path)
 except Exception as e:
     st.error(f"Error loading models: {e}")
+    st.stop()
 
 # Load the dataset
 data_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/frmgham2.csv'
@@ -47,6 +48,7 @@ try:
     data = pd.read_csv(data_url)
 except Exception as e:
     st.error(f"Error loading data: {e}")
+    st.stop()
 
 # Handle missing values by replacing them with the mean of the respective columns
 if 'data' in locals():
@@ -124,6 +126,10 @@ input_df = input_df.astype({
     'HDLC': 'int64'
 })
 
+# Debug: Print the input dataframe to verify
+st.write("### Input DataFrame")
+st.write(input_df)
+
 # Apply the model to make predictions
 if st.sidebar.button('PREDICT NOW'):
     try:
@@ -139,8 +145,8 @@ if st.sidebar.button('PREDICT NOW'):
 
     st.subheader('Predictions')
     try:
-        st.write(f"- Random Forest model: Your CVD with probability prediction is {rf_proba_calibrated[0]:.2f}")
-        st.write(f"- Gradient Boosting Machine model: Your CVD with probability prediction is {gbm_proba_calibrated[0]:.2f}")
+        st.write(f"- Random Forest model: Your CVD probability prediction is {rf_proba_calibrated[0]:.2f}")
+        st.write(f"- Gradient Boosting Machine model: Your CVD probability prediction is {gbm_proba_calibrated[0]:.2f}")
     except:
         pass
 
@@ -189,23 +195,6 @@ if st.sidebar.button('PREDICT NOW'):
         st.pyplot(fig)
     except Exception as e:
         st.error(f"Error plotting feature importances: {e}")
-
-    # Add explanations for the features
-    st.markdown("""
-    - **Stroke:** The history of stroke is the most significant factor.
-    - **BMI (Body Mass Index):** Higher BMI indicates higher risk.
-    - **SYSBP (Systolic Blood Pressure):** Elevated systolic blood pressure is a critical indicator.
-    - **TOTCHOL (Total Cholesterol):** Higher cholesterol levels contribute to the risk.
-    - **GLUCOSE:** Higher glucose levels are also important in the prediction.
-    - **AGE:** Older age increases the risk of CVD.
-    - **DIABP (Diastolic Blood Pressure):** Elevated diastolic blood pressure plays a role.
-    - **HEARTRTE (Heart Rate):** Higher heart rate is a contributing factor.
-    - **CIGPDAY (Cigarettes Per Day):** The number of cigarettes smoked per day impacts the risk.
-    - **BPMEDS (Blood Pressure Medication):** Use of BP medication is taken into account.
-    - **HYPERTEN (Hypertension):** Having hypertension is a minor but notable factor.
-    - **DIABETES:** The presence of diabetes is a minor factor in this prediction.
-    - **CURSMOKE (Current Smoker):** Whether the individual is currently smoking has the least impact compared to other factors.
-    """)
 
 else:
     st.write("## CVD Prediction App by Howard Nguyen")
