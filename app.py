@@ -151,6 +151,38 @@ if st.sidebar.button('PREDICT NOW'):
     except Exception as e:
         st.error(f"Error plotting ROC curve: {e}")
 
+    # Plot feature importances for Random Forest
+    st.subheader('Risk Factors / Feature Importances (RF)')
+    try:
+        rf_base_model = rf_model_calibrated.estimator  # Access the base estimator
+        fig, ax = plt.subplots()
+        importances = rf_base_model.feature_importances_
+        indices = np.argsort(importances)
+        ax.barh(range(len(indices)), importances[indices], color='blue', align='center')
+        ax.set_yticks(range(len(indices)))
+        ax.set_yticklabels([feature_columns[i] for i in indices])
+        ax.set_xlabel('Importance')
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error plotting feature importances: {e}")
+
+    # Add explanations for the features
+    st.markdown("""
+    - **Stroke:** The history of stroke is the most significant factor.
+    - **BMI (Body Mass Index):** Higher BMI indicates higher risk.
+    - **SYSBP (Systolic Blood Pressure):** Elevated systolic blood pressure is a critical indicator.
+    - **TOTCHOL (Total Cholesterol):** Higher cholesterol levels contribute to the risk.
+    - **GLUCOSE:** Higher glucose levels are also important in the prediction.
+    - **AGE:** Older age increases the risk of CVD.
+    - **DIABP (Diastolic Blood Pressure):** Elevated diastolic blood pressure plays a role.
+    - **HEARTRTE (Heart Rate):** Higher heart rate is a contributing factor.
+    - **CIGPDAY (Cigarettes Per Day):** The number of cigarettes smoked per day impacts the risk.
+    - **BPMEDS (Blood Pressure Medication):** Use of BP medication is taken into account.
+    - **HYPERTEN (Hypertension):** Having hypertension is a minor but notable factor.
+    - **DIABETES:** The presence of diabetes is a minor factor in this prediction.
+    - **CURSMOKE (Current Smoker):** Whether the individual is currently smoking has the least impact compared to other factors.
+    """)
+
 else:
     st.write("## CVD Prediction App by Howard Nguyen")
     st.write("#### Enter your parameters and click Predict to get the results.")
