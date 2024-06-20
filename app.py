@@ -40,6 +40,7 @@ try:
     gbm_model_calibrated = joblib.load(gbm_model_path)
 except Exception as e:
     st.error(f"Error loading models: {e}")
+    st.stop()
 
 # Load the dataset
 data_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/frmgham2.csv'
@@ -47,32 +48,35 @@ try:
     data = pd.read_csv(data_url)
 except Exception as e:
     st.error(f"Error loading data: {e}")
+    st.stop()
 
 # Handle missing values by replacing them with the mean of the respective columns
 if 'data' in locals():
     data.fillna(data.mean(), inplace=True)
 
 # Define the feature columns
-feature_columns = ['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE',
-                   'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS',
-                   'STROKE', 'HYPERTEN']
+feature_columns = ['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 
+                   'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 
+                   'STROKE', 'HYPERTEN', 'LDLC','HDLC']
 
 # Sidebar for input parameters
 st.sidebar.header('Enter your parameters')
 
 def user_input_features():
     age = st.sidebar.slider('Enter your age:', 32, 81, 54)
-    totchol = st.sidebar.slider('Total Cholesterol:', 107, 696, 200)
-    sysbp = st.sidebar.slider('Systolic Blood Pressure:', 83, 295, 151)
-    diabp = st.sidebar.slider('Diastolic Blood Pressure:', 30, 150, 89)
-    bmi = st.sidebar.slider('BMI:', 14.43, 56.80, 26.77)
-    cursmoke = st.sidebar.selectbox('Current Smoker:', (0, 1))
+    totchol = st.sidebar.slider('Total Cholesterol:', 107, 696, 175)
+    sysbp = st.sidebar.slider('Systolic Blood Pressure:', 83, 295, 130)
+    diabp = st.sidebar.slider('Diastolic Blood Pressure:', 30, 150, 80)
+    bmi = st.sidebar.slider('BMI:', 14.43, 56.80, 28.27)
+    heartrate = st.sidebar.slider('Heart Rate:', 37, 220, 60)
     glucose = st.sidebar.slider('Glucose:', 39, 478, 117)
-    diabetes = st.sidebar.selectbox('Diabetes:', (0, 1))
-    heartrate = st.sidebar.slider('Heart Rate:', 37, 220, 91)
-    cigpday = st.sidebar.slider('Cigarettes Per Day:', 0, 90, 20)
-    bpmeds = st.sidebar.selectbox('On BP Meds:', (0, 1))
+    cigpday = st.sidebar.slider('Cigarettes Per Day:', 0, 90, 0)
+    ldlc = st.sidebar.slider('LDLC:', 20, 565, 180) 
+    hdlc = st.sidebar.slider('HDLC:', 10, 189, 80) 
     stroke = st.sidebar.selectbox('Stroke:', (0, 1))
+    cursmoke = st.sidebar.selectbox('Current Smoker:', (0, 1))   
+    diabetes = st.sidebar.selectbox('Diabetes:', (0, 1))
+    bpmeds = st.sidebar.selectbox('On BP Meds:', (0, 1))
     hyperten = st.sidebar.selectbox('Hypertension:', (0, 1))
 
     data = {
@@ -88,30 +92,64 @@ def user_input_features():
         'CIGPDAY': cigpday,
         'BPMEDS': bpmeds,
         'STROKE': stroke,
-        'HYPERTEN': hyperten
+        'HYPERTEN': hyperten,
+        'LDLC': ldlc,
+        'HDLC': hdlc
     }
     features = pd.DataFrame(data, index=[0])
     return features
 
 input_df = user_input_features()
 
+# Ensure input_df columns match the trained model feature columns
+input_df = input_df[feature_columns]
+
+# Clean feature names to ensure no hidden characters or spaces
+input_df.columns = input_df.columns.str.strip()
+
+# Explicitly set data types to match model expectations
+input_df = input_df.astype({
+    'AGE': 'int64',
+    'TOTCHOL': 'int64',
+    'SYSBP': 'int64',
+    'DIABP': 'int64',
+    'BMI': 'float64',
+    'CURSMOKE': 'int64',
+    'GLUCOSE': 'int64',
+    'DIABETES': 'int64',
+    'HEARTRTE': 'int64',
+    'CIGPDAY': 'int64',
+    'BPMEDS': 'int64',
+    'STROKE': 'int64',
+    'HYPERTEN': 'int64',
+    'LDLC': 'int64',
+    'HDLC': 'int64'
+})
+
+# Debug: Print the input dataframe to verify
+st.write("### Input DataFrame")
+st.write(input_df)
+
 # Apply the model to make predictions
-if st.sidebar.button('Predict'):
+if st.sidebar.button('PREDICT NOW'):
     try:
         rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df)[:, 1]
         gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df)[:, 1]
+        st.write("### Debug: Model Predictions")
+        st.write(f"Random Forest Probability: {rf_proba_calibrated}")
+        st.write(f"Gradient Boosting Machine Probability: {gbm_proba_calibrated}")
     except Exception as e:
         st.error(f"Error making predictions: {e}")
 
     st.write("""
-    # CVD Prediction App by Howard Nguyen
+    ## Your CVD Probability Prediction Results
     This app predicts the probability of cardiovascular disease (CVD) using user inputs.
     """)
 
     st.subheader('Predictions')
     try:
-        st.write(f"- Random Forest model: Your CVD with probability prediction is {rf_proba_calibrated[0]:.2f}")
-        st.write(f"- Gradient Boosting Machine model: Your CVD with probability prediction is {gbm_proba_calibrated[0]:.2f}")
+        st.write(f"- Random Forest model: Your CVD probability prediction is {rf_proba_calibrated[0]:.2f}")
+        st.write(f"- Gradient Boosting Machine model: Your CVD probability prediction is {gbm_proba_calibrated[0]:.2f}")
     except:
         pass
 
@@ -129,21 +167,6 @@ if st.sidebar.button('Predict'):
     except:
         pass
 
-    # Plot feature importances for Random Forest
-    st.subheader('Feature Importances (Random Forest)')
-    try:
-        rf_base_model = rf_model_calibrated.estimator  # Access the base estimator
-        fig, ax = plt.subplots()
-        importances = rf_base_model.feature_importances_
-        indices = np.argsort(importances)
-        ax.barh(range(len(indices)), importances[indices], color='blue', align='center')
-        ax.set_yticks(range(len(indices)))
-        ax.set_yticklabels([feature_columns[i] for i in indices])
-        ax.set_xlabel('Importance')
-        st.pyplot(fig)
-    except Exception as e:
-        st.error(f"Error plotting feature importances: {e}")
-
     # Plot ROC curve for both models
     st.subheader('Model Performance')
     try:
@@ -160,6 +183,39 @@ if st.sidebar.button('Predict'):
         st.pyplot(fig)
     except Exception as e:
         st.error(f"Error plotting ROC curve: {e}")
+
+    # Plot calibration curve for both models
+    st.subheader('Calibration Curve')
+    try:
+        fig, ax = plt.subplots()
+        prob_true_rf, prob_pred_rf = calibration_curve(data['CVD'], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1], n_bins=10)
+        prob_true_gbm, prob_pred_gbm = calibration_curve(data['CVD'], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1], n_bins=10)
+        ax.plot(prob_pred_rf, prob_true_rf, marker='o', label='Random Forest')
+        ax.plot(prob_pred_gbm, prob_true_gbm, marker='s', label='Gradient Boosting Machine')
+        ax.plot([0, 1], [0, 1], 'k--', label='Perfectly calibrated')
+        ax.set_xlabel('Predicted Probability')
+        ax.set_ylabel('True Probability')
+        ax.set_title('Calibration Curve')
+        ax.legend(loc='best')
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error plotting calibration curve: {e}")
+
+    # Plot feature importances for Random Forest
+    st.subheader('Risk Factors / Feature Importances (RF)')
+    try:
+        rf_base_model = rf_model_calibrated.estimator  # Access the base estimator
+        fig, ax = plt.subplots()
+        importances = rf_base_model.feature_importances_
+        indices = np.argsort(importances)
+        ax.barh(range(len(indices)), importances[indices], color='blue', align='center')
+        ax.set_yticks(range(len(indices)))
+        ax.set_yticklabels([feature_columns[i] for i in indices])
+        ax.set_xlabel('Importance')
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error plotting feature importances: {e}")
+
 else:
-    st.write("## Cardiovascular Disease Prediction App")
-    st.write("### Enter your parameters and click Predict to get the results.")
+    st.write("## CVD Prediction App by Howard Nguyen")
+    st.write("#### Enter your parameters and click Predict to get the results.")
