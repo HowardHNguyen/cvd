@@ -55,7 +55,7 @@ if 'data' in locals():
 # Define the feature columns
 feature_columns = ['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 
                    'GLUCOSE', 'DIABETES', 'HEARTRTE', 'CIGPDAY', 'BPMEDS', 
-                   'STROKE', 'HYPERTEN']
+                   'STROKE', 'HYPERTEN', 'LDLC','HDLC']
 
 # Sidebar for input parameters
 st.sidebar.header('Enter your parameters')
