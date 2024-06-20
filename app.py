@@ -18,7 +18,7 @@ def download_file(url, dest):
         return False
 
 # URLs for the model files
-rf_model_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/rf_model_calibrated.pkl'
+rf_model_url = 'https://howardnguyen.com/data/rf_model_calibrated.pkl'
 gbm_model_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/gbm_model_calibrated.pkl'
 
 # Local paths for the model files
@@ -41,18 +41,6 @@ try:
 except Exception as e:
     st.error(f"Error loading models: {e}")
     st.stop()
-
-# Load the dataset
-data_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/frmgham2.csv'
-try:
-    data = pd.read_csv(data_url)
-except Exception as e:
-    st.error(f"Error loading data: {e}")
-    st.stop()
-
-# Handle missing values by replacing them with the mean of the respective columns
-if 'data' in locals():
-    data.fillna(data.mean(), inplace=True)
 
 # Define the feature columns
 feature_columns = ['AGE', 'TOTCHOL', 'SYSBP', 'DIABP', 'BMI', 'CURSMOKE', 
@@ -104,22 +92,13 @@ input_df = user_input_features()
 # Ensure input_df columns match the trained model feature columns
 input_df = input_df[feature_columns]
 
-# Debug: Print the input dataframe to verify
-st.write("### Input DataFrame")
-st.write(input_df)
-
-# Check the distribution of the target variable
-st.write("### Distribution of Target Variable (CVD)")
-st.write(data['CVD'].value_counts(normalize=True))
-
 # Apply the model to make predictions
 if st.sidebar.button('PREDICT NOW'):
     try:
         rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df)[:, 1]
         gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df)[:, 1]
-        st.write("### Debug: Model Predictions")
-        st.write(f"Random Forest Probability: {rf_proba_calibrated}")
-        st.write(f"Gradient Boosting Machine Probability: {gbm_proba_calibrated}")
+        st.write(f"Random Forest Probability: {rf_proba_calibrated[0]:.2f}")
+        st.write(f"Gradient Boosting Machine Probability: {gbm_proba_calibrated[0]:.2f}")
     except Exception as e:
         st.error(f"Error making predictions: {e}")
 
@@ -146,8 +125,17 @@ if st.sidebar.button('PREDICT NOW'):
             yval = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}', va='bottom')  # va: vertical alignment
         st.pyplot(fig)
-    except:
-        pass
+    except Exception as e:
+        st.error(f"Error plotting probability distribution: {e}")
+
+    # Load the dataset
+    data_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/frmgham2.csv'
+    try:
+        data = pd.read_csv(data_url)
+        data.fillna(data.mean(), inplace=True)
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        st.stop()
 
     # Plot ROC curve for both models
     st.subheader('Model Performance')
