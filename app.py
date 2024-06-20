@@ -104,9 +104,6 @@ input_df = user_input_features()
 # Ensure input_df columns match the trained model feature columns
 input_df = input_df[feature_columns]
 
-# Clean feature names to ensure no hidden characters or spaces
-input_df.columns = input_df.columns.str.strip()
-
 # Debug: Print the input dataframe to verify
 st.write("### Input DataFrame")
 st.write(input_df)
