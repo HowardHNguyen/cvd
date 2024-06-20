@@ -22,8 +22,8 @@ rf_model_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/rf_mo
 gbm_model_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/gbm_model_calibrated.pkl'
 
 # Local paths for the model files
-rf_model_path = 'rf_model_recalibrated.pkl'
-gbm_model_path = 'gbm_model_recalibrated.pkl'
+rf_model_path = 'rf_model_calibrated.pkl'
+gbm_model_path = 'gbm_model_calibrated.pkl'
 
 # Download the models if not already present
 if not os.path.exists(rf_model_path):
@@ -34,7 +34,7 @@ if not os.path.exists(gbm_model_path):
     st.info(f"Downloading {gbm_model_path}...")
     download_file(gbm_model_url, gbm_model_path)
 
-# Load the recalibrated models
+# Load the models
 try:
     rf_model_calibrated = joblib.load(rf_model_path)
     gbm_model_calibrated = joblib.load(gbm_model_path)
