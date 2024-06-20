@@ -135,6 +135,9 @@ if st.sidebar.button('PREDICT NOW'):
     try:
         rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df)[:, 1]
         gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df)[:, 1]
+        st.write("### Debug: Model Predictions")
+        st.write(f"Random Forest Probability: {rf_proba_calibrated}")
+        st.write(f"Gradient Boosting Machine Probability: {gbm_proba_calibrated}")
     except Exception as e:
         st.error(f"Error making predictions: {e}")
 
