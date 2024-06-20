@@ -77,7 +77,6 @@ def user_input_features():
     bpmeds = st.sidebar.selectbox('On BP Meds:', (0, 1))
     hyperten = st.sidebar.selectbox('Hypertension:', (0, 1))
 
-    
     data = {
         'AGE': age,
         'TOTCHOL': totchol,
@@ -92,13 +91,38 @@ def user_input_features():
         'BPMEDS': bpmeds,
         'STROKE': stroke,
         'HYPERTEN': hyperten,
-	  'LDLC': ldlc,
-	  'HDLC': hdlc
+        'LDLC': ldlc,
+        'HDLC': hdlc
     }
     features = pd.DataFrame(data, index=[0])
     return features
 
 input_df = user_input_features()
+
+# Ensure input_df columns match the trained model feature columns
+input_df = input_df[feature_columns]
+
+# Clean feature names to ensure no hidden characters or spaces
+input_df.columns = input_df.columns.str.strip()
+
+# Explicitly set data types to match model expectations
+input_df = input_df.astype({
+    'AGE': 'int64',
+    'TOTCHOL': 'int64',
+    'SYSBP': 'int64',
+    'DIABP': 'int64',
+    'BMI': 'float64',
+    'CURSMOKE': 'int64',
+    'GLUCOSE': 'int64',
+    'DIABETES': 'int64',
+    'HEARTRTE': 'int64',
+    'CIGPDAY': 'int64',
+    'BPMEDS': 'int64',
+    'STROKE': 'int64',
+    'HYPERTEN': 'int64',
+    'LDLC': 'int64',
+    'HDLC': 'int64'
+})
 
 # Apply the model to make predictions
 if st.sidebar.button('PREDICT NOW'):
