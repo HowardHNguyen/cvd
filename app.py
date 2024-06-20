@@ -168,19 +168,21 @@ if st.sidebar.button('PREDICT NOW'):
 
     # Add explanations for the features
     st.markdown("""
-    - **Stroke:** The history of stroke is the most significant factor.
-    - **BMI (Body Mass Index):** Higher BMI indicates higher risk.
-    - **SYSBP (Systolic Blood Pressure):** Elevated systolic blood pressure is a critical indicator.
-    - **TOTCHOL (Total Cholesterol):** Higher cholesterol levels contribute to the risk.
-    - **GLUCOSE:** Higher glucose levels are also important in the prediction.
+    - **Stroke:** The history of stroke is a significant factor in predicting CVD.
+    - **BMI (Body Mass Index):** Higher BMI indicates a higher risk of CVD.
+    - **SYSBP (Systolic Blood Pressure):** Elevated systolic blood pressure is a critical indicator of CVD.
+    - **TOTCHOL (Total Cholesterol):** Higher cholesterol levels contribute to the risk of CVD.
+    - **GLUCOSE:** Higher glucose levels are important in predicting CVD.
     - **AGE:** Older age increases the risk of CVD.
-    - **DIABP (Diastolic Blood Pressure):** Elevated diastolic blood pressure plays a role.
-    - **HEARTRTE (Heart Rate):** Higher heart rate is a contributing factor.
-    - **CIGPDAY (Cigarettes Per Day):** The number of cigarettes smoked per day impacts the risk.
-    - **BPMEDS (Blood Pressure Medication):** Use of BP medication is taken into account.
-    - **HYPERTEN (Hypertension):** Having hypertension is a minor but notable factor.
-    - **DIABETES:** The presence of diabetes is a minor factor in this prediction.
-    - **CURSMOKE (Current Smoker):** Whether the individual is currently smoking has the least impact compared to other factors.
+    - **DIABP (Diastolic Blood Pressure):** Elevated diastolic blood pressure plays a role in the prediction of CVD.
+    - **HEARTRTE (Heart Rate):** Higher heart rate is a contributing factor to CVD risk.
+    - **CIGPDAY (Cigarettes Per Day):** The number of cigarettes smoked per day impacts the risk of CVD.
+    - **BPMEDS (Blood Pressure Medication):** Use of BP medication is considered in the prediction.
+    - **HDLC (High-Density Lipoprotein Cholesterol):** Higher levels of HDLC are generally associated with a lower risk of CVD, as HDLC helps to remove cholesterol from the bloodstream.
+    - **LDLC (Low-Density Lipoprotein Cholesterol):** Higher levels of LDLC are associated with an increased risk of CVD, as LDLC can lead to cholesterol buildup in the arteries.
+    - **HYPERTEN (Hypertension):** Having hypertension is a notable factor in the prediction of CVD.
+    - **DIABETES:** The presence of diabetes is a contributing factor in the prediction of CVD.
+    - **CURSMOKE (Current Smoker):** Whether the individual is currently smoking affects the risk of CVD.
     """)
 
 else:
