@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.calibration import calibration_curve
 from sklearn.metrics import roc_curve, roc_auc_score
-from sklearn.preprocessing import StandardScaler
 import os
 import urllib.request
 
@@ -21,12 +20,10 @@ def download_file(url, dest):
 # URLs for the model files
 rf_model_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/rf_model_calibrated.pkl'
 gbm_model_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/gbm_model_calibrated.pkl'
-scaler_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/scaler.pkl'
 
 # Local paths for the model files
 rf_model_path = 'rf_model_calibrated.pkl'
 gbm_model_path = 'gbm_model_calibrated.pkl'
-scaler_path = 'scaler.pkl'
 
 # Download the models if not already present
 if not os.path.exists(rf_model_path):
@@ -37,17 +34,12 @@ if not os.path.exists(gbm_model_path):
     st.info(f"Downloading {gbm_model_path}...")
     download_file(gbm_model_url, gbm_model_path)
 
-if not os.path.exists(scaler_path):
-    st.info(f"Downloading {scaler_path}...")
-    download_file(scaler_url, scaler_path)
-
-# Load the models and scaler
+# Load the models
 try:
     rf_model_calibrated = joblib.load(rf_model_path)
     gbm_model_calibrated = joblib.load(gbm_model_path)
-    scaler = joblib.load(scaler_path)
 except Exception as e:
-    st.error(f"Error loading models or scaler: {e}")
+    st.error(f"Error loading models: {e}")
     st.stop()
 
 # Load the dataset
@@ -115,15 +107,9 @@ input_df = input_df[feature_columns]
 # Clean feature names to ensure no hidden characters or spaces
 input_df.columns = input_df.columns.str.strip()
 
-# Apply the same scaling as used in training
-input_df_scaled = scaler.transform(input_df)
-
-# Convert scaled array back to DataFrame with correct feature names
-input_df_scaled = pd.DataFrame(input_df_scaled, columns=feature_columns)
-
 # Debug: Print the input dataframe to verify
 st.write("### Input DataFrame")
-st.write(input_df_scaled)
+st.write(input_df)
 
 # Check the distribution of the target variable
 st.write("### Distribution of Target Variable (CVD)")
@@ -132,8 +118,8 @@ st.write(data['CVD'].value_counts(normalize=True))
 # Apply the model to make predictions
 if st.sidebar.button('PREDICT NOW'):
     try:
-        rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df_scaled)[:, 1]
-        gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df_scaled)[:, 1]
+        rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df)[:, 1]
+        gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df)[:, 1]
         st.write("### Debug: Model Predictions")
         st.write(f"Random Forest Probability: {rf_proba_calibrated}")
         st.write(f"Gradient Boosting Machine Probability: {gbm_proba_calibrated}")
@@ -170,10 +156,10 @@ if st.sidebar.button('PREDICT NOW'):
     st.subheader('Model Performance')
     try:
         fig, ax = plt.subplots()
-        fpr_rf, tpr_rf, _ = roc_curve(data['CVD'], rf_model_calibrated.predict_proba(scaler.transform(data[feature_columns]))[:, 1])
-        fpr_gbm, tpr_gbm, _ = roc_curve(data['CVD'], gbm_model_calibrated.predict_proba(scaler.transform(data[feature_columns]))[:, 1])
-        ax.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(data["CVD"], rf_model_calibrated.predict_proba(scaler.transform(data[feature_columns]))[:, 1]):.2f})')
-        ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(data["CVD"], gbm_model_calibrated.predict_proba(scaler.transform(data[feature_columns]))[:, 1]):.2f})')
+        fpr_rf, tpr_rf, _ = roc_curve(data['CVD'], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1])
+        fpr_gbm, tpr_gbm, _ = roc_curve(data['CVD'], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1])
+        ax.plot(fpr_rf, tpr_rf, label=f'Random Forest (AUC = {roc_auc_score(data["CVD"], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
+        ax.plot(fpr_gbm, tpr_gbm, label=f'Gradient Boosting Machine (AUC = {roc_auc_score(data["CVD"], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1]):.2f})')
         ax.plot([0, 1], [0, 1], 'k--')
         ax.set_xlabel('False Positive Rate')
         ax.set_ylabel('True Positive Rate')
@@ -187,8 +173,8 @@ if st.sidebar.button('PREDICT NOW'):
     st.subheader('Calibration Curve')
     try:
         fig, ax = plt.subplots()
-        prob_true_rf, prob_pred_rf = calibration_curve(data['CVD'], rf_model_calibrated.predict_proba(scaler.transform(data[feature_columns]))[:, 1], n_bins=10)
-        prob_true_gbm, prob_pred_gbm = calibration_curve(data['CVD'], gbm_model_calibrated.predict_proba(scaler.transform(data[feature_columns]))[:, 1], n_bins=10)
+        prob_true_rf, prob_pred_rf = calibration_curve(data['CVD'], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1], n_bins=10)
+        prob_true_gbm, prob_pred_gbm = calibration_curve(data['CVD'], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1], n_bins=10)
         ax.plot(prob_pred_rf, prob_true_rf, marker='o', label='Random Forest')
         ax.plot(prob_pred_gbm, prob_true_gbm, marker='s', label='Gradient Boosting Machine')
         ax.plot([0, 1], [0, 1], 'k--', label='Perfectly calibrated')
