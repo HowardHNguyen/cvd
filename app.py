@@ -181,6 +181,23 @@ if st.sidebar.button('PREDICT NOW'):
     except Exception as e:
         st.error(f"Error plotting ROC curve: {e}")
 
+    # Plot calibration curve for both models
+    st.subheader('Calibration Curve')
+    try:
+        fig, ax = plt.subplots()
+        prob_true_rf, prob_pred_rf = calibration_curve(data['CVD'], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1], n_bins=10)
+        prob_true_gbm, prob_pred_gbm = calibration_curve(data['CVD'], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1], n_bins=10)
+        ax.plot(prob_pred_rf, prob_true_rf, marker='o', label='Random Forest')
+        ax.plot(prob_pred_gbm, prob_true_gbm, marker='s', label='Gradient Boosting Machine')
+        ax.plot([0, 1], [0, 1], 'k--', label='Perfectly calibrated')
+        ax.set_xlabel('Predicted Probability')
+        ax.set_ylabel('True Probability')
+        ax.set_title('Calibration Curve')
+        ax.legend(loc='best')
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error plotting calibration curve: {e}")
+
     # Plot feature importances for Random Forest
     st.subheader('Risk Factors / Feature Importances (RF)')
     try:
