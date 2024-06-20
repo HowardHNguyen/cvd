@@ -40,7 +40,6 @@ try:
     gbm_model_calibrated = joblib.load(gbm_model_path)
 except Exception as e:
     st.error(f"Error loading models: {e}")
-    st.stop()
 
 # Load the dataset
 data_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/frmgham2.csv'
@@ -48,7 +47,6 @@ try:
     data = pd.read_csv(data_url)
 except Exception as e:
     st.error(f"Error loading data: {e}")
-    st.stop()
 
 # Handle missing values by replacing them with the mean of the respective columns
 if 'data' in locals():
@@ -71,14 +69,12 @@ def user_input_features():
     heartrate = st.sidebar.slider('Heart Rate:', 37, 220, 60)
     glucose = st.sidebar.slider('Glucose:', 39, 478, 117)
     cigpday = st.sidebar.slider('Cigarettes Per Day:', 0, 90, 0)
-    ldlc = st.sidebar.slider('LDLC:', 20, 565, 180) 
-    hdlc = st.sidebar.slider('HDLC:', 10, 189, 80) 
     stroke = st.sidebar.selectbox('Stroke:', (0, 1))
     cursmoke = st.sidebar.selectbox('Current Smoker:', (0, 1))   
     diabetes = st.sidebar.selectbox('Diabetes:', (0, 1))
     bpmeds = st.sidebar.selectbox('On BP Meds:', (0, 1))
     hyperten = st.sidebar.selectbox('Hypertension:', (0, 1))
-
+    
     data = {
         'AGE': age,
         'TOTCHOL': totchol,
@@ -92,52 +88,18 @@ def user_input_features():
         'CIGPDAY': cigpday,
         'BPMEDS': bpmeds,
         'STROKE': stroke,
-        'HYPERTEN': hyperten,
-        'LDLC': ldlc,
-        'HDLC': hdlc
+        'HYPERTEN': hyperten
     }
     features = pd.DataFrame(data, index=[0])
     return features
 
 input_df = user_input_features()
 
-# Ensure input_df columns match the trained model feature columns
-input_df = input_df[feature_columns]
-
-# Clean feature names to ensure no hidden characters or spaces
-input_df.columns = input_df.columns.str.strip()
-
-# Explicitly set data types to match model expectations
-input_df = input_df.astype({
-    'AGE': 'int64',
-    'TOTCHOL': 'int64',
-    'SYSBP': 'int64',
-    'DIABP': 'int64',
-    'BMI': 'float64',
-    'CURSMOKE': 'int64',
-    'GLUCOSE': 'int64',
-    'DIABETES': 'int64',
-    'HEARTRTE': 'int64',
-    'CIGPDAY': 'int64',
-    'BPMEDS': 'int64',
-    'STROKE': 'int64',
-    'HYPERTEN': 'int64',
-    'LDLC': 'int64',
-    'HDLC': 'int64'
-})
-
-# Debug: Print the input dataframe to verify
-st.write("### Input DataFrame")
-st.write(input_df)
-
 # Apply the model to make predictions
 if st.sidebar.button('PREDICT NOW'):
     try:
         rf_proba_calibrated = rf_model_calibrated.predict_proba(input_df)[:, 1]
         gbm_proba_calibrated = gbm_model_calibrated.predict_proba(input_df)[:, 1]
-        st.write("### Debug: Model Predictions")
-        st.write(f"Random Forest Probability: {rf_proba_calibrated}")
-        st.write(f"Gradient Boosting Machine Probability: {gbm_proba_calibrated}")
     except Exception as e:
         st.error(f"Error making predictions: {e}")
 
@@ -148,8 +110,8 @@ if st.sidebar.button('PREDICT NOW'):
 
     st.subheader('Predictions')
     try:
-        st.write(f"- Random Forest model: Your CVD probability prediction is {rf_proba_calibrated[0]:.2f}")
-        st.write(f"- Gradient Boosting Machine model: Your CVD probability prediction is {gbm_proba_calibrated[0]:.2f}")
+        st.write(f"- Random Forest model: Your CVD with probability prediction is {rf_proba_calibrated[0]:.2f}")
+        st.write(f"- Gradient Boosting Machine model: Your CVD with probability prediction is {gbm_proba_calibrated[0]:.2f}")
     except:
         pass
 
@@ -184,23 +146,6 @@ if st.sidebar.button('PREDICT NOW'):
     except Exception as e:
         st.error(f"Error plotting ROC curve: {e}")
 
-    # Plot calibration curve for both models
-    st.subheader('Calibration Curve')
-    try:
-        fig, ax = plt.subplots()
-        prob_true_rf, prob_pred_rf = calibration_curve(data['CVD'], rf_model_calibrated.predict_proba(data[feature_columns])[:, 1], n_bins=10)
-        prob_true_gbm, prob_pred_gbm = calibration_curve(data['CVD'], gbm_model_calibrated.predict_proba(data[feature_columns])[:, 1], n_bins=10)
-        ax.plot(prob_pred_rf, prob_true_rf, marker='o', label='Random Forest')
-        ax.plot(prob_pred_gbm, prob_true_gbm, marker='s', label='Gradient Boosting Machine')
-        ax.plot([0, 1], [0, 1], 'k--', label='Perfectly calibrated')
-        ax.set_xlabel('Predicted Probability')
-        ax.set_ylabel('True Probability')
-        ax.set_title('Calibration Curve')
-        ax.legend(loc='best')
-        st.pyplot(fig)
-    except Exception as e:
-        st.error(f"Error plotting calibration curve: {e}")
-
     # Plot feature importances for Random Forest
     st.subheader('Risk Factors / Feature Importances (RF)')
     try:
@@ -215,6 +160,23 @@ if st.sidebar.button('PREDICT NOW'):
         st.pyplot(fig)
     except Exception as e:
         st.error(f"Error plotting feature importances: {e}")
+
+    # Add explanations for the features
+    st.markdown("""
+    - **Stroke:** The history of stroke is the most significant factor.
+    - **BMI (Body Mass Index):** Higher BMI indicates higher risk.
+    - **SYSBP (Systolic Blood Pressure):** Elevated systolic blood pressure is a critical indicator.
+    - **TOTCHOL (Total Cholesterol):** Higher cholesterol levels contribute to the risk.
+    - **GLUCOSE:** Higher glucose levels are also important in the prediction.
+    - **AGE:** Older age increases the risk of CVD.
+    - **DIABP (Diastolic Blood Pressure):** Elevated diastolic blood pressure plays a role.
+    - **HEARTRTE (Heart Rate):** Higher heart rate is a contributing factor.
+    - **CIGPDAY (Cigarettes Per Day):** The number of cigarettes smoked per day impacts the risk.
+    - **BPMEDS (Blood Pressure Medication):** Use of BP medication is taken into account.
+    - **HYPERTEN (Hypertension):** Having hypertension is a minor but notable factor.
+    - **DIABETES:** The presence of diabetes is a minor factor in this prediction.
+    - **CURSMOKE (Current Smoker):** Whether the individual is currently smoking has the least impact compared to other factors.
+    """)
 
 else:
     st.write("## CVD Prediction App by Howard Nguyen")
