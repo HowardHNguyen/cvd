@@ -69,11 +69,14 @@ def user_input_features():
     heartrate = st.sidebar.slider('Heart Rate:', 37, 220, 60)
     glucose = st.sidebar.slider('Glucose:', 39, 478, 117)
     cigpday = st.sidebar.slider('Cigarettes Per Day:', 0, 90, 0)
+    ldlc = st.sidebar.slider('LDLC:', 20, 565, 180) 
+    hdlc = st.sidebar.slider('HDLC:', 10, 189, 80) 
     stroke = st.sidebar.selectbox('Stroke:', (0, 1))
     cursmoke = st.sidebar.selectbox('Current Smoker:', (0, 1))   
     diabetes = st.sidebar.selectbox('Diabetes:', (0, 1))
     bpmeds = st.sidebar.selectbox('On BP Meds:', (0, 1))
     hyperten = st.sidebar.selectbox('Hypertension:', (0, 1))
+
     
     data = {
         'AGE': age,
@@ -88,7 +91,9 @@ def user_input_features():
         'CIGPDAY': cigpday,
         'BPMEDS': bpmeds,
         'STROKE': stroke,
-        'HYPERTEN': hyperten
+        'HYPERTEN': hyperten,
+	  'LDLC': ldlc,
+	  'HDLC': hdlc
     }
     features = pd.DataFrame(data, index=[0])
     return features
