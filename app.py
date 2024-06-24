@@ -18,7 +18,7 @@ def download_file(url, dest):
         return False
 
 # URLs for the model files
-rf_model_url = 'https://howardnguyen.com/data/rf_model_calibrated.pkl'
+rf_model_url = 'https://drive.google.com/file/d/1QYRO5DK2-pqwIaldIHjewUDCxgbPnNfD/view?usp=drive_link'
 gbm_model_url = 'https://raw.githubusercontent.com/HowardHNguyen/cvd/master/gbm_model_calibrated.pkl'
 
 # Local paths for the model files
